@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>جوابك v7</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<style>
+/* ════════════════════════════════════════════════════════
+   CSS VARIABLES — يتم تحديثها ديناميكياً من إعدادات اللعبة
+   ════════════════════════════════════════════════════════ */
+:root {
+  --bg: #4e22a0;
+  --bg2: #3e1890;
+  --panel: rgba(28,8,80,.62);
+  --bdr: rgba(255,255,255,.13);
+  /* ألوان الفريقين — يتم تعديلها عند اختيار الثيم */
+  --t1: #e8601e;        /* لون الفريق 1 */
+  --t1-2: #ff9055;      /* تدرج الفريق 1 */
+  --t1-bg: rgba(232,96,30,.18);
+  --t1-hex: #e8601e;    /* لون الخلية الفريق 1 */
+  --t2: #1c72ee;        /* لون الفريق 2 */
+  --t2-2: #70baff;
+  --t2-bg: rgba(28,114,238,.18);
+  --t2-hex: #1c72ee;    /* لون الخلية الفريق 2 */
+  --gold: #f5c842;
+  --gold2: #fde98a;
+  --dim: rgba(255,255,255,.5);
+  /* متغيرات الشبكة */
+  --grid-size: 5;
+}
+
+/* ════ RESET ════ */
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
+html, body { width:100%; height:100%; overflow:hidden }
+body { font-family:'Cairo',sans-serif; background:var(--bg); color:#fff; user-select:none }
+input, button { font-family:'Cairo',sans-serif }
+
+/* ════ SCREEN SYSTEM — مع انتقال سلس ════ */
+.scr {
+  display:none; position:fixed; inset:0;
+  flex-direction:column; overflow:hidden;
+  pointer-events:none;
+}
+.scr.on {
+  display:flex;
+  animation: scrIn .3s ease forwards;
+  pointer-events:auto;
+}
+@keyframes scrIn {
+  from { opacity:0; transform:scale(1.018) translateY(6px) }
+  to   { opacity:1; transform:scale(1) translateY(0) }
+}
+
+/* ════ خلايا الشبكة ════ */
+@keyframes hexIn {
+  from { opacity:0; transform:scale(.65) }
+  to   { opacity:1; transform:scale(1) }
+}
+
+/* ════ SCROLLBAR ════ */
+::-webkit-scrollbar { width:4px }
+::-webkit-scrollbar-thumb { background:rgba(115,70,220,.34); border-radius:2px }
+
+/* ════════════════════════════════════════════════════════
+   شاشة الإعدادات (Settings)
+   ════════════════════════════════════════════════════════ */
+#s-settings {
+  background: radial-gradient(ellipse 120% 80% at 50% -5%, #8040d8 0%, #280878 100%);
+  align-items: center; justify-content: flex-start;
+  padding: 20px 16px 16px;
+  overflow-y: auto; gap: 14px;
+}
+.set-logo { font-size: 64px; font-weight:900; line-height:.9; letter-spacing:-4px;
+  background: linear-gradient(140deg,#fff 0%,#f5c842 40%,#e879f9 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter: drop-shadow(0 4px 24px rgba(245,200,66,.5)); text-align:center; flex-shrink:0 }
+.set-card {
+  background: rgba(255,255,255,.09); border: 1.5px solid var(--bdr);
+  border-radius: 20px; padding: 20px 22px;
+  width: min(520px,97vw); backdrop-filter: blur(28px);
+  box-shadow: 0 18px 55px rgba(0,0,0,.38); flex-shrink:0
+}
+.set-section { margin-bottom: 16px }
+.set-label {
+  font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase;
+  color:rgba(190,150,255,.9); margin-bottom:8px; display:flex; align-items:center; gap:6px
+}
+.set-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.1) }
+/* اسم المسابقة */
+.set-input {
+  width:100%; padding:10px 14px;
+  background: rgba(255,255,255,.09); border:1.5px solid rgba(255,255,255,.18);
+  border-radius:10px; color:#fff; font-size:15px; font-weight:700;
+  direction:rtl; outline:none; transition:border-color .2s
+}
+.set-input:focus { border-color:rgba(255,255,255,.5) }
+.set-input::placeholder { color:rgba(255,255,255,.28); font-weight:400 }
+/* اسما الفريقين */
+.teams-row { display:flex; gap:10px }
+.team-input-wrap { flex:1; display:flex; align-items:center; gap:8px }
+.team-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0 }
+.td1 { background:var(--t1) } .td2 { background:var(--t2) }
+/* راديو بتونز */
+.radio-group { display:flex; gap:8px; flex-wrap:wrap }
+.radio-btn {
+  padding:7px 14px; border-radius:50px; border:1.5px solid rgba(255,255,255,.2);
+  background:rgba(255,255,255,.07); color:rgba(255,255,255,.7);
+  font-size:12px; font-weight:700; cursor:pointer; transition:all .2s
+}
+.radio-btn.active {
+  background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff;
+  border-color:transparent; box-shadow:0 3px 12px rgba(124,58,237,.4)
+}
+.radio-btn:hover:not(.active) { background:rgba(255,255,255,.14); color:#fff }
+/* تبديل التشغيل */
+.toggle-row { display:flex; align-items:center; justify-content:space-between }
+.toggle-label { font-size:13px; font-weight:600; color:rgba(255,255,255,.8) }
+.toggle { position:relative; width:46px; height:26px }
+.toggle input { opacity:0; width:0; height:0 }
+.toggle-slider {
+  position:absolute; inset:0; background:rgba(255,255,255,.2);
+  border-radius:34px; cursor:pointer; transition:all .3s
+}
+.toggle-slider::before {
+  content:''; position:absolute; width:20px; height:20px;
+  left:3px; top:3px; background:#fff; border-radius:50%; transition:all .3s
+}
+.toggle input:checked + .toggle-slider { background:linear-gradient(135deg,#a855f7,#7c3aed) }
+.toggle input:checked + .toggle-slider::before { transform:translateX(20px) }
+/* ألوان الثيم */
+.color-grid { display:flex; gap:8px; flex-wrap:wrap }
+.color-swatch {
+  width:48px; height:36px; border-radius:10px; cursor:pointer;
+  border:2.5px solid transparent; transition:all .2s; overflow:hidden;
+  display:flex; position:relative
+}
+.color-swatch.selected { border-color:#fff; transform:scale(1.12); box-shadow:0 0 12px rgba(255,255,255,.4) }
+.cs-half { flex:1; height:100% }
+/* أزرار البدء */
+.set-btns { display:flex; flex-direction:column; gap:8px; margin-top:4px }
+.set-btn {
+  padding:12px 16px; border-radius:11px; border:none;
+  font-size:13px; font-weight:700; cursor:pointer; transition:all .22s;
+  display:flex; align-items:center; justify-content:center; gap:8px
+}
+.set-btn-p { background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; box-shadow:0 4px 16px rgba(124,58,237,.4) }
+.set-btn-p:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(124,58,237,.6) }
+.set-btn-g { background:linear-gradient(135deg,#16a34a,#14803d); color:#fff; box-shadow:0 4px 12px rgba(22,163,74,.35) }
+.set-btn-g:hover { transform:translateY(-2px) }
+.set-btn-o { background:rgba(255,255,255,.08); color:rgba(255,255,255,.72); border:1.5px solid var(--bdr) }
+.set-btn-o:hover { background:rgba(255,255,255,.15); color:#fff }
+.set-btns-row { display:flex; gap:8px }
+.set-btns-row .set-btn { flex:1 }
+
+/* ════════════════════════════════════════════════════════
+   HEADER
+   ════════════════════════════════════════════════════════ */
+.hdr {
+  flex-shrink:0; height:50px;
+  background: rgba(18,4,65,.72); border-bottom:1px solid var(--bdr);
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 13px; backdrop-filter:blur(22px); z-index:20
+}
+.hlogo {
+  font-size:20px; font-weight:900;
+  background:linear-gradient(135deg,#fff,var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text
+}
+.hsc { display:flex; gap:7px }
+.sc { display:flex; align-items:center; gap:7px; padding:4px 11px; border-radius:50px; font-size:12px; font-weight:700 }
+.sc-1 { background:var(--t1-bg); border:1.5px solid rgba(var(--t1-rgb),.45); color:var(--t1-2) }
+.sc-2 { background:var(--t2-bg); border:1.5px solid rgba(var(--t2-rgb),.45); color:var(--t2-2) }
+.scn { font-size:18px; font-weight:900 }
+.hbts { display:flex; gap:6px }
+.hbt {
+  padding:4px 10px; border-radius:6px; border:1.5px solid rgba(255,255,255,.16);
+  background:rgba(255,255,255,.07); color:rgba(255,255,255,.7);
+  cursor:pointer; font-size:11px; font-weight:600; transition:all .2s
+}
+.hbt:hover { background:rgba(255,255,255,.17); color:#fff }
+
+/* ════════════════════════════════════════════════════════
+   HEX GRID — FLAT-TOP DESIGN
+   W = عرض الخلية، H = W × 0.866 (ارتفاع مثلث)
+   المسافة بين الصفوف: H × 0.75 (تداخل 25%)
+   الصفوف الفردية تتحرك يميناً W/2
+   ════════════════════════════════════════════════════════ */
+.hxgrid { display:flex; flex-direction:column; align-items:flex-start }
+.hxrow { display:flex }
+.hx { flex-shrink:0; position:relative; cursor:pointer; transition:transform .18s cubic-bezier(.34,1.56,.64,1), filter .18s }
+.hx:not(.nb):not(.owned):hover { transform:scale(1.12); filter:brightness(1.22) drop-shadow(0 4px 12px rgba(200,150,255,.45)); z-index:2 }
+.hx svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible }
+.hx svg polygon { transition:fill .32s cubic-bezier(.4,0,.2,1), stroke .32s, filter .32s }
+
+/* حالات الخلايا */
+.hx.hw svg polygon { fill:#eeebff; stroke:#c4b0f0; stroke-width:1.5 }
+.hx.hr svg polygon { fill:var(--t1-hex); stroke:rgba(255,160,100,.4); stroke-width:1.8; filter:drop-shadow(0 0 6px rgba(232,96,30,.4)) }
+.hx.hb svg polygon { fill:var(--t2-hex); stroke:rgba(80,150,255,.4); stroke-width:1.8; filter:drop-shadow(0 0 6px rgba(28,114,238,.4)) }
+.hx.brd-1 svg polygon { fill:var(--t1); stroke:rgba(0,0,0,.1); stroke-width:1 }
+.hx.brd-2 svg polygon { fill:var(--t2); stroke:rgba(0,0,0,.1); stroke-width:1 }
+.hx.act svg polygon { fill:#ffe840!important; stroke:#e0b800!important; stroke-width:2.5!important; filter:drop-shadow(0 0 14px rgba(255,232,0,.7))!important; animation:actpulse 1.2s ease-in-out infinite }
+@keyframes actpulse {
+  0%,100% { filter:drop-shadow(0 0 8px rgba(255,232,0,.5)) }
+  50% { filter:drop-shadow(0 0 22px rgba(255,232,0,.95)) }
+}
+/* خلية مكتسبة حديثاً */
+@keyframes cellclaim {
+  0% { transform: scale(1.3); }
+  60% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+.hx.just-claimed { animation: cellclaim .45s cubic-bezier(.34,1.56,.64,1) }
+
+/* خلية الفوز */
+.hx.win-cell svg polygon {
+  animation: wpulse .65s ease-in-out infinite;
+}
+@keyframes wpulse {
+  0%,100% { fill:var(--gold); filter:drop-shadow(0 0 10px gold) }
+  50% { fill:#fff700; filter:drop-shadow(0 0 28px #fff700) }
+}
+/* تسمية الخلية */
+.hxlbl {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  font-weight:900; pointer-events:none; line-height:1; transition:color .2s
+}
+.hx.hw .hxlbl { color:#2d1060 }
+.hx.hr .hxlbl, .hx.hb .hxlbl { color:rgba(255,255,255,.96) }
+.hx.brd-1 .hxlbl, .hx.brd-2 .hxlbl { color:rgba(255,255,255,.8) }
+.hx.act .hxlbl { color:#4a1800!important }
+
+/* غلاف الشبكة مع مؤشرات الاتجاه */
+.hwrap { position:relative; display:inline-block }
+.darr {
+  position:absolute; font-size:10px; font-weight:700;
+  letter-spacing:1.5px; display:flex; align-items:center; gap:4px;
+  white-space:nowrap; pointer-events:none; z-index:5
+}
+.darr-t { top:-26px; left:50%; transform:translateX(-50%); color:var(--t1-2) }
+.darr-b { bottom:-26px; left:50%; transform:translateX(-50%); color:var(--t1-2) }
+.darr-r { right:-62px; top:50%; transform:translateY(-50%) rotate(90deg); color:var(--t2-2) }
+.darr-l { left:-62px; top:50%; transform:translateY(-50%) rotate(-90deg); color:var(--t2-2) }
+.dd { width:6px; height:6px; border-radius:50%; flex-shrink:0 }
+
+/* ════════════════════════════════════════════════════════
+   شاشة المضيف (Host)
+   ════════════════════════════════════════════════════════ */
+#sh { background:var(--bg2) }
+.hbody { flex:1; display:flex; min-height:0 }
+.garea { flex:1; display:flex; align-items:center; justify-content:center; padding:18px 12px; overflow:hidden }
+.rpanel {
+  width:308px; flex-shrink:0; background:var(--panel);
+  border-right:1px solid var(--bdr); display:flex; flex-direction:column; overflow-y:auto
+}
+.rps { padding:11px 13px; border-bottom:1px solid var(--bdr) }
+.rpl { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(190,150,255,.8); margin-bottom:7px }
+.albox { background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.12); border-radius:10px; padding:9px; text-align:center }
+.alch { font-size:50px; font-weight:900; color:var(--gold); line-height:1; text-shadow:0 0 20px rgba(245,200,66,.5) }
+.alsb { font-size:10px; color:var(--dim); margin-top:2px }
+.qcard { background:rgba(255,255,255,.05); border:1.5px solid var(--bdr); border-radius:10px; padding:11px; margin-top:8px; display:none }
+.qdif {
+  display:inline-flex; align-items:center; gap:3px;
+  background:rgba(255,255,255,.1); border-radius:20px; padding:2px 8px;
+  font-size:10px; font-weight:700; color:var(--gold2); margin-bottom:7px
+}
+.qtxt { font-size:13px; line-height:1.85; color:#ddd4ff; font-weight:500; margin-bottom:8px }
+.ansb { background:rgba(245,200,66,.1); border:1.5px solid rgba(245,200,66,.26); border-radius:8px; padding:7px 11px; display:flex; align-items:center; gap:6px }
+.ansl { font-size:9px; font-weight:700; letter-spacing:2px; color:var(--gold); flex-shrink:0 }
+.ansv { font-size:14px; font-weight:700; color:var(--gold2) }
+/* ════ نظام المساعدة الذكي ════ */
+.hint-sys {
+  margin-top:8px; border-radius:11px; padding:9px; display:none;
+}
+.hint-sys.on { display:block }
+.hint-sys-title {
+  font-size:10px; font-weight:800; color:rgba(180,140,255,.8);
+  letter-spacing:1px; margin-bottom:7px; text-align:center;
+  text-transform:uppercase;
+}
+.hint-levels { display:flex; flex-direction:column; gap:5px }
+.hlvl {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.05); border:1.5px solid rgba(255,255,255,.1);
+  border-radius:9px; padding:8px 11px; cursor:pointer;
+  transition:all .22s; width:100%;
+  color:#fff; font-size:11px;
+}
+.hlvl:hover:not(:disabled) {
+  background:rgba(100,60,220,.28); border-color:rgba(140,90,255,.5);
+  transform:translateX(-3px);
+  box-shadow: 0 3px 12px rgba(100,60,220,.3);
+}
+.hlvl:disabled { opacity:.28; cursor:not-allowed; transform:none }
+.hlvl.used {
+  background:rgba(34,160,80,.12); border-color:rgba(34,160,80,.35);
+  opacity:.55; cursor:default;
+}
+.hlvl-icon { font-size:16px; flex-shrink:0 }
+.hlvl-txt  { flex:1; font-weight:700; font-size:11px; text-align:right }
+.hlvl-cost {
+  font-size:9px; font-weight:800; padding:3px 8px;
+  border-radius:20px; background:rgba(34,160,80,.18);
+  color:#6ee890; border:1px solid rgba(34,160,80,.35); flex-shrink:0;
+}
+.hlvl-c2 { background:rgba(245,158,11,.14); color:#fbbf24; border-color:rgba(245,158,11,.4) }
+.hlvl-c3 { background:rgba(239,68,68,.14); color:#fca5a5; border-color:rgba(239,68,68,.4) }
+.hint-reveal {
+  margin-top:9px; padding:9px 13px;
+  background:rgba(245,200,66,.1); border:1.5px solid rgba(245,200,66,.32);
+  border-radius:9px; font-size:14px; font-weight:800;
+  color:var(--gold); letter-spacing:2px; text-align:center;
+  display:none; animation:popIn .28s cubic-bezier(.34,1.56,.64,1);
+  direction:rtl; line-height:1.8;
+}
+.hint-reveal.on { display:block }
+/* زر "طلب مساعدة" الرئيسي */
+.btnhint {
+  width:100%; margin-top:6px; background:rgba(100,60,220,.16);
+  border:1.5px solid rgba(100,60,220,.3); color:#b898ff; border-radius:8px;
+  padding:7px; font-size:11px; font-weight:700; cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; justify-content:center; gap:5px
+}
+.btnhint:hover { background:rgba(100,60,220,.36); color:#fff }
+.btnchg {
+  width:100%; margin-top:6px; background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(255,255,255,.11); color:var(--dim);
+  border-radius:8px; padding:6px; font-size:11px; font-weight:700;
+  cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:5px
+}
+.btnchg:hover { background:rgba(255,255,255,.13); color:#fff }
+.jrow { display:flex; gap:6px; margin-bottom:6px }
+.jbt {
+  flex:1; border:none; border-radius:9px; padding:10px 4px;
+  font-size:12px; font-weight:700; cursor:pointer; transition:all .2s
+}
+.jbt:disabled { opacity:.22; cursor:not-allowed; transform:none!important }
+.jbr { background:linear-gradient(135deg,var(--t1),#a03810); color:#fff; box-shadow:0 3px 10px rgba(232,96,30,.3) }
+.jbr:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 5px 16px rgba(232,96,30,.55) }
+.jbb { background:linear-gradient(135deg,var(--t2),#1040a8); color:#fff; box-shadow:0 3px 10px rgba(28,114,238,.3) }
+.jbb:not(:disabled):hover { transform:translateY(-2px); box-shadow:0 5px 16px rgba(28,114,238,.55) }
+.jbw {
+  width:100%; background:rgba(28,14,62,.72); color:#8888a8;
+  border:1.5px solid rgba(140,120,190,.18); border-radius:9px; padding:8px;
+  font-size:11px; font-weight:700; cursor:pointer; transition:all .2s;
+  display:flex; align-items:center; justify-content:center; gap:5px
+}
+.jbw:not(:disabled):hover { background:rgba(60,30,100,.72); color:#fff }
+.jbw:disabled { opacity:.2; cursor:not-allowed }
+.lkbx {
+  display:none; margin-top:6px; background:rgba(185,25,25,.12);
+  border:1.5px solid rgba(185,25,25,.4); border-radius:9px; padding:8px;
+  text-align:center; animation:lkf .5s ease infinite alternate
+}
+.lkbx.on { display:block }
+@keyframes lkf { from{border-color:rgba(185,25,25,.25)} to{border-color:rgba(185,25,25,.95)} }
+.lknum { font-size:30px; font-weight:900; color:#ef4444; line-height:1 }
+.lklbl { font-size:10px; color:#fca5a5; margin-top:2px }
+.nosel { text-align:center; padding:10px 0; font-size:11px; color:var(--dim) }
+.stxt { font-size:11px; color:var(--dim); line-height:1.9 }
+
+/* ════ شاشة العرض ════ */
+#sd { background:radial-gradient(ellipse at 50% 35%,#6828c0 0%,#250878 100%) }
+.dbody { flex:1; display:flex; align-items:center; justify-content:center; padding:10px; overflow:hidden }
+.dal {
+  position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
+  background:rgba(18,4,65,.92); border:2px solid rgba(245,200,66,.44);
+  border-radius:13px; padding:8px 22px; display:none; align-items:center; gap:12px;
+  backdrop-filter:blur(18px); z-index:100; box-shadow:0 8px 28px rgba(0,0,0,.45)
+}
+.dal.on { display:flex }
+.dal-l { font-size:11px; color:var(--dim); font-weight:600 }
+.dal-c { font-size:48px; font-weight:900; color:var(--gold); line-height:1 }
+
+/* ════ اللعب الثنائي (Self Play) ════ */
+#ss { background:var(--bg2) }
+.sbody { flex:1; display:flex; min-height:0 }
+.ssp { width:248px; flex-shrink:0; display:flex; flex-direction:column; overflow-y:auto }
+.ssp-r { background:rgba(232,96,30,.1); border-left:1px solid rgba(232,96,30,.26) }
+.ssp-b { background:rgba(28,114,238,.1); border-right:1px solid rgba(28,114,238,.26) }
+.sph { padding:9px 12px; font-size:13px; font-weight:900; border-bottom:1px solid rgba(255,255,255,.09); display:flex; align-items:center; gap:7px }
+.sph-r { color:#ffaa80 } .sph-b { color:#80baff }
+.spsc { font-size:24px; font-weight:900; margin-right:auto }
+.spsec { padding:8px 11px; border-bottom:1px solid rgba(255,255,255,.07) }
+.spl { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(190,150,255,.8); margin-bottom:6px }
+.spqt { font-size:12px; line-height:1.85; color:#ddd4ff; font-weight:500; min-height:30px }
+.spans { background:rgba(245,200,66,.1); border:1.5px solid rgba(245,200,66,.26); border-radius:7px; padding:6px 10px; display:none; align-items:center; gap:5px; margin-top:5px }
+.spans.on { display:flex }
+.sphint { background:rgba(100,60,220,.16); border:1.5px solid rgba(100,60,220,.26); border-radius:7px; padding:6px 10px; font-size:11px; color:#d0b8ff; display:none; margin-top:5px }
+.sphint.on { display:block }
+.spbtns { display:flex; flex-direction:column; gap:5px; padding:7px 11px }
+.spb { border:none; border-radius:8px; padding:8px; font-size:11px; font-weight:700; cursor:pointer; transition:all .2s; display:flex; align-items:center; justify-content:center; gap:4px; width:100% }
+.spb:disabled { opacity:.18; cursor:not-allowed }
+.spb-cr { background:linear-gradient(135deg,var(--t1),#a03810); color:#fff; box-shadow:0 3px 9px rgba(232,96,30,.28) }
+.spb-cr:not(:disabled):hover { transform:translateY(-1px) }
+.spb-cb { background:linear-gradient(135deg,var(--t2),#1040a8); color:#fff; box-shadow:0 3px 9px rgba(28,114,238,.28) }
+.spb-cb:not(:disabled):hover { transform:translateY(-1px) }
+.spb-rv { background:rgba(245,200,66,.14); border:1.5px solid rgba(245,200,66,.28); color:var(--gold2) }
+.spb-rv:not(:disabled):hover { background:rgba(245,200,66,.28) }
+.spb-ht { background:rgba(100,60,220,.18); border:1.5px solid rgba(100,60,220,.3); color:#b898ff }
+.spb-ht:not(:disabled):hover { background:rgba(100,60,220,.36); color:#fff }
+.spb-wg { background:rgba(28,14,60,.72); color:#8888a8; border:1.5px solid rgba(130,110,180,.16) }
+.spb-wg:not(:disabled):hover { background:rgba(60,28,100,.72); color:#fff }
+.spb-cg { background:rgba(255,255,255,.06); border:1.5px solid rgba(255,255,255,.1); color:var(--dim) }
+.spb-cg:not(:disabled):hover { background:rgba(255,255,255,.13); color:#fff }
+.splkbx { display:none; margin:0 11px 6px; background:rgba(185,25,25,.12); border:1.5px solid rgba(185,25,25,.36); border-radius:9px; padding:8px; text-align:center; animation:lkf .5s ease infinite alternate }
+.splkbx.on { display:block }
+
+/* ════ اللوبي الأونلاين ════ */
+#sol {
+  background: radial-gradient(ellipse at 50% 0%,#6828c0 0%,#22077a 100%);
+  align-items:center; justify-content:center; gap:16px; padding:28px 16px; overflow-y:auto
+}
+.olcard { background:rgba(255,255,255,.09); border:1.5px solid var(--bdr); border-radius:20px; padding:22px 26px; width:min(460px,95vw); backdrop-filter:blur(28px) }
+.oltabs { display:flex; gap:7px; margin-bottom:16px }
+.oltab { flex:1; padding:8px; border-radius:9px; border:1.5px solid var(--bdr); background:rgba(255,255,255,.07); color:var(--dim); font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; text-align:center }
+.oltab.active { background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; border-color:transparent; box-shadow:0 3px 12px rgba(124,58,237,.4) }
+.oltab:hover:not(.active) { background:rgba(255,255,255,.13); color:#fff }
+.olsec { display:none } .olsec.on { display:block }
+.olll { font-size:11px; color:var(--dim); margin-bottom:5px; font-weight:600 }
+.oli { width:100%; padding:9px 12px; background:rgba(255,255,255,.09); border:1.5px solid rgba(255,255,255,.17); border-radius:9px; color:#fff; font-size:14px; font-weight:700; direction:rtl; outline:none; margin-bottom:11px; transition:border-color .2s }
+.oli:focus { border-color:rgba(255,255,255,.48) }
+.olcode { font-size:44px; font-weight:900; color:var(--gold); text-align:center; letter-spacing:7px; padding:12px; background:rgba(245,200,66,.1); border:2px solid rgba(245,200,66,.3); border-radius:12px; margin-bottom:10px }
+.olcodeh { font-size:11px; color:var(--dim); text-align:center; margin-bottom:13px }
+.olbtn { width:100%; padding:11px; border-radius:10px; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all .22s; display:flex; align-items:center; justify-content:center; gap:7px; margin-bottom:7px }
+.olbtn-p { background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; box-shadow:0 4px 14px rgba(124,58,237,.4) }
+.olbtn-p:hover { transform:translateY(-2px) }
+.olbtn-o { background:rgba(255,255,255,.08); color:rgba(255,255,255,.72); border:1.5px solid var(--bdr) }
+.olbtn-o:hover { background:rgba(255,255,255,.15); color:#fff }
+.olst { font-size:12px; color:var(--dim); text-align:center; padding:9px; min-height:36px; line-height:1.8 }
+.olst.ok { color:#6ee89a } .olst.err { color:#ff8080 }
+.team-pick { display:flex; gap:7px; margin-bottom:11px }
+.tpb { flex:1; padding:9px; border-radius:9px; border:1.5px solid var(--bdr); background:rgba(255,255,255,.07); color:var(--dim); font-size:12px; font-weight:700; cursor:pointer; transition:all .2s; text-align:center }
+.tpb.sel-r { background:var(--t1-bg); border-color:var(--t1); color:var(--t1-2) }
+.tpb.sel-b { background:var(--t2-bg); border-color:var(--t2); color:var(--t2-2) }
+.tpb:hover:not(.sel-r):not(.sel-b) { background:rgba(255,255,255,.13); color:#fff }
+
+/* QR Code */
+.qr-wrap {
+  text-align:center; margin:12px 0 8px;
+  display:flex; flex-direction:column; align-items:center; gap:8px
+}
+.qr-wrap img {
+  border-radius:14px;
+  border:3px solid rgba(245,200,66,.55);
+  box-shadow:0 0 24px rgba(245,200,66,.22), 0 8px 24px rgba(0,0,0,.5);
+  padding:6px; background:#1c0850;
+}
+.qr-label {
+  font-size:11px; font-weight:700; color:var(--gold2);
+  letter-spacing:2px; background:rgba(245,200,66,.1);
+  border:1px solid rgba(245,200,66,.25); border-radius:20px;
+  padding:4px 14px
+}
+
+/* ════ غرفة الانتظار ════ */
+#sowait { background:var(--bg2) }
+.pslots { display:flex; flex-direction:column; gap:7px; margin-bottom:14px }
+.pslot { display:flex; align-items:center; gap:9px; padding:8px 12px; background:rgba(255,255,255,.06); border:1.5px solid var(--bdr); border-radius:9px }
+.psn { font-size:10px; color:var(--dim); font-weight:700; min-width:22px }
+.psname { flex:1; font-size:13px; font-weight:700 }
+.psname.emp { color:var(--dim); font-weight:400; font-style:italic }
+.psteam { font-size:10px; font-weight:700; padding:2px 8px; border-radius:12px }
+.pst-r { background:var(--t1-bg); color:var(--t1-2); border:1px solid rgba(232,96,30,.4) }
+.pst-b { background:var(--t2-bg); color:var(--t2-2); border:1px solid rgba(28,114,238,.4) }
+.olstart { width:100%; padding:12px; border-radius:10px; border:none; font-size:14px; font-weight:700; cursor:pointer; background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; box-shadow:0 4px 14px rgba(34,197,94,.35); transition:all .22s }
+.olstart:hover { transform:translateY(-2px) }
+.olstart:disabled { opacity:.3; cursor:not-allowed; transform:none }
+
+/* ════ اللعبة الأونلاين ════ */
+#song { background:var(--bg2) }
+.ogbody { flex:1; display:flex; min-height:0 }
+.ogpanel { width:296px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--bdr); display:flex; flex-direction:column; overflow-y:auto; padding:11px }
+.ogqbox { background:rgba(255,255,255,.06); border:1.5px solid var(--bdr); border-radius:11px; padding:13px; margin-bottom:10px }
+.ogqtxt { font-size:14px; line-height:1.9; color:#e0d8ff; font-weight:600; min-height:42px }
+.ogqltr { font-size:11px; color:var(--gold2); font-weight:700; margin-top:5px }
+.oginput { width:100%; padding:11px 13px; font-size:16px; font-weight:700; background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; direction:rtl; outline:none; transition:border-color .2s; text-align:center; margin-bottom:6px }
+.oginput:focus { border-color:var(--gold) }
+.oginput::placeholder { color:rgba(255,255,255,.28) }
+.oginput:disabled { opacity:.45 }
+.ogspeed { font-size:11px; color:var(--dim); text-align:center; margin-bottom:9px }
+.ogflash { font-size:15px; font-weight:900; text-align:center; padding:9px 16px; border-radius:10px; animation:flashin .28s ease; display:none; margin-bottom:8px }
+.ogflash.ok { background:rgba(34,197,94,.2); border:1.5px solid #22c55e; color:#6ee89a; display:block }
+.ogflash.err { background:rgba(239,68,68,.2); border:1.5px solid #ef4444; color:#fca5a5; display:block }
+@keyframes flashin { from{transform:scale(.82);opacity:0} to{transform:scale(1);opacity:1} }
+.ogplist-hdr { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(190,150,255,.8); margin-bottom:7px }
+.ogprow { display:flex; align-items:center; gap:7px; padding:6px 9px; border-radius:8px; margin-bottom:4px; background:rgba(255,255,255,.04) }
+.ogpdot { width:9px; height:9px; border-radius:50%; flex-shrink:0 }
+.ogpname { flex:1; font-size:12px; font-weight:600 }
+.ogpscore { font-size:14px; font-weight:900 }
+
+/* ════ شاشة الفوز ════ */
+#swin {
+  background: radial-gradient(ellipse at 50% 20%,#6028c0 0%,#150560 70%);
+  align-items:center; justify-content:center; padding:0; overflow:hidden
+}
+.winwrap { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:36px; position:relative; z-index:2; text-align:center }
+.win-crown { font-size:86px; animation:crownanim 2s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(245,200,66,.8)) }
+@keyframes crownanim { 0%,100%{transform:translateY(0) scale(1) rotate(-4deg)} 50%{transform:translateY(-18px) scale(1.1) rotate(4deg)} }
+.win-sup { font-size:17px; color:rgba(255,255,255,.6); font-weight:600; letter-spacing:2px }
+.win-name { font-size:58px; font-weight:900; line-height:1; animation:namepop .55s ease }
+@keyframes namepop { from{transform:scale(.45);opacity:0} to{transform:scale(1);opacity:1} }
+.win-1 { color:var(--t1-2); text-shadow:0 0 38px rgba(232,96,30,.7) }
+.win-2 { color:var(--t2-2); text-shadow:0 0 38px rgba(28,114,238,.7) }
+.win-desc { font-size:13px; color:rgba(255,255,255,.5); max-width:400px; line-height:1.9 }
+.rings { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0 }
+.ring { position:absolute; border-radius:50%; top:50%; left:50%; transform:translate(-50%,-50%); animation:rexp 3s ease-out infinite }
+@keyframes rexp { 0%{width:0;height:0;opacity:.7} 100%{width:700px;height:700px;opacity:0} }
+.win-btns { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:5px; position:relative; z-index:2 }
+.wbtn { padding:11px 24px; border-radius:11px; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all .22s }
+.wbtn1 { background:linear-gradient(135deg,#a855f7,#7c3aed); color:#fff; box-shadow:0 4px 15px rgba(124,58,237,.4) }
+.wbtn1:hover { transform:translateY(-2px) }
+.wbtn2 { background:rgba(255,255,255,.1); color:rgba(255,255,255,.72); border:1.5px solid var(--bdr) }
+.wbtn2:hover { background:rgba(255,255,255,.2); color:#fff }
+
+/* ════ انيميشن إجابة ════ */
+@keyframes correct-flash {
+  0%{background:rgba(34,197,94,.0)} 30%{background:rgba(34,197,94,.25)} 100%{background:rgba(34,197,94,.0)}
+}
+@keyframes wrong-flash {
+  0%{background:rgba(239,68,68,.0)} 30%{background:rgba(239,68,68,.25)} 100%{background:rgba(239,68,68,.0)}
+}
+
+/* ════ انيميشنات الدخول العامة ════ */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(18px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+@keyframes fadeIn {
+  from { opacity:0 }
+  to   { opacity:1 }
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(.82) }
+  to   { opacity:1; transform:scale(1) }
+}
+@keyframes slideRight {
+  from { opacity:0; transform:translateX(-22px) }
+  to   { opacity:1; transform:translateX(0) }
+}
+@keyframes slideLeft {
+  from { opacity:0; transform:translateX(22px) }
+  to   { opacity:1; transform:translateX(0) }
+}
+
+/* لوحة الجانب — عناصرها تدخل بتأخير متتالي */
+.rps { animation: slideLeft .32s ease both }
+.rps:nth-child(1) { animation-delay:.05s }
+.rps:nth-child(2) { animation-delay:.12s }
+.rps:nth-child(3) { animation-delay:.19s }
+.rps:nth-child(4) { animation-delay:.26s }
+
+/* بطاقة السؤال */
+.qcard { animation: popIn .28s cubic-bezier(.34,1.56,.64,1) both }
+.qcard[style*="block"] { animation: popIn .28s cubic-bezier(.34,1.56,.64,1) both }
+
+/* الهيدر */
+.hdr { animation: fadeIn .25s ease both }
+
+/* منطقة الشبكة */
+.garea .hwrap  { animation: fadeUp .38s ease both; animation-delay:.08s }
+.dbody .hwrap  { animation: fadeUp .38s ease both; animation-delay:.08s }
+
+/* أزرار الحكم */
+.jrow .jbt { animation: fadeUp .25s ease both }
+.jrow .jbt:nth-child(1) { animation-delay:.22s }
+.jrow .jbt:nth-child(2) { animation-delay:.3s }
+.jbw { animation: fadeUp .25s ease both; animation-delay:.36s }
+
+/* إعدادات */
+.set-card { animation: fadeUp .35s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.1s }
+.set-logo { animation: fadeIn .4s ease both }
+
+/* شاشة الفوز */
+.win-crown { animation: crownanim 2s ease-in-out infinite, popIn .5s cubic-bezier(.34,1.56,.64,1) both }
+.win-sup   { animation: fadeUp .3s ease both; animation-delay:.15s }
+.win-name  { animation: namepop .55s cubic-bezier(.34,1.56,.64,1) both; animation-delay:.25s }
+.win-desc  { animation: fadeUp .3s ease both; animation-delay:.4s }
+.win-btns  { animation: fadeUp .3s ease both; animation-delay:.55s }
+
+/* toast */
+.toast { animation: toastIn .28s cubic-bezier(.34,1.56,.64,1), thd .3s ease 2.5s forwards }
+@keyframes toastIn { from{opacity:0;transform:translateY(-14px) scale(.88)} to{opacity:1;transform:translateY(0) scale(1)} }
+.flash-correct { animation:correct-flash .6s ease }
+.flash-wrong { animation:wrong-flash .6s ease }
+
+/* ════ CONFETTI ════ */
+#cfw { position:fixed; inset:0; pointer-events:none; z-index:9999; overflow:hidden }
+.cfp { position:absolute; top:-20px; animation:cfall linear forwards }
+@keyframes cfall {
+  0%  { top:-20px; opacity:1; transform:rotate(0deg) translateX(0) }
+  80% { opacity:.9 }
+  100%{ top:110vh; opacity:0; transform:rotate(var(--spin,820deg)) translateX(var(--dx,0)) }
+}
+
+/* ════ TOAST ════ */
+#tw { position:fixed; top:11px; left:50%; transform:translateX(-50%); z-index:8888; display:flex; flex-direction:column; gap:6px; pointer-events:none; align-items:center }
+.toast { background:rgba(22,6,70,.94); border:1.5px solid rgba(115,70,220,.56); color:#fff; padding:8px 20px; border-radius:50px; font-size:12px; font-weight:600; white-space:nowrap; animation:toastIn .28s cubic-bezier(.34,1.56,.64,1), thd .3s ease 2.5s forwards; box-shadow:0 5px 18px rgba(0,0,0,.42) }
+.tok { background:rgba(3,32,14,.94); border-color:#10b981 }
+.terr { background:rgba(42,4,4,.94); border-color:#ef4444 }
+@keyframes tsh { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes thd { from{opacity:1} to{opacity:0} }
+
+/* ════ FOOTER ════ */
+footer { flex-shrink:0; text-align:center; padding:4px; font-size:9px; color:rgba(255,255,255,.17); letter-spacing:1px; border-top:1px solid var(--bdr) }
+footer b { color:rgba(245,200,66,.48) }
+
+/* ════ RESPONSIVE ════ */
+@media (max-width: 768px) {
+  .rpanel { width:260px }
+  .ssp { width:200px }
+  .ogpanel { width:240px }
+  .darr-r, .darr-l { display:none }
+  .darr { font-size:9px }
+}
+@media (max-width: 600px) {
+  .rpanel, .ogpanel { display:none }
+  .ssp { width:160px }
+  .set-card { padding:14px 14px }
+}
+</style>
+</head>
+<body>
+<div id="cfw"></div>
+<div id="tw"></div>
+
+<!-- ════════════════════════════════════════════════════════
+     شاشة الإعدادات (Settings Screen)
+     ════════════════════════════════════════════════════════ -->
+<div id="s-settings" class="scr on">
+  <div class="set-logo">جوابك</div>
+
+  <div class="set-card">
+    <!-- اسم المسابقة -->
+    <div class="set-section">
+      <div class="set-label">🏆 اسم المسابقة</div>
+      <input class="set-input" id="cfg-name" value="مسابقة جوابك" maxlength="30" placeholder="اكتب اسم المسابقة...">
+    </div>
+
+    <!-- اسما الفريقين -->
+    <div class="set-section">
+      <div class="set-label">👥 أسماء الفريقين</div>
+      <div class="teams-row">
+        <div class="team-input-wrap">
+          <div class="team-dot td1" id="dot1"></div>
+          <input class="set-input" id="cfg-t1" value="الفريق الأول" maxlength="14">
+        </div>
+        <div class="team-input-wrap">
+          <div class="team-dot td2" id="dot2"></div>
+          <input class="set-input" id="cfg-t2" value="الفريق الثاني" maxlength="14">
+        </div>
+      </div>
+    </div>
+
+    <!-- عدد جولات الفوز -->
+    <div class="set-section">
+      <div class="set-label">🎯 عدد جولات الفوز</div>
+      <div class="radio-group" id="rg-rounds">
+        <div class="radio-btn active" data-v="1">جولة واحدة</div>
+        <div class="radio-btn" data-v="2">جولتان</div>
+        <div class="radio-btn" data-v="3">ثلاث جولات</div>
+      </div>
+    </div>
+
+    <!-- حجم الشبكة -->
+    <div class="set-section">
+      <div class="set-label">📐 عدد الخلايا (حجم الشبكة)</div>
+      <div class="radio-group" id="rg-size">
+        <div class="radio-btn" data-v="4">4×4</div>
+        <div class="radio-btn active" data-v="5">5×5</div>
+        <div class="radio-btn" data-v="6">6×6</div>
+      </div>
+    </div>
+
+    <!-- حساب الفوز تلقائياً -->
+    <div class="set-section">
+      <div class="set-label">⚡ حساب الفوز</div>
+      <div class="toggle-row">
+        <span class="toggle-label">حساب الفوز تلقائياً (BFS)</span>
+        <label class="toggle">
+          <input type="checkbox" id="cfg-autowin" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <!-- ألوان الخلايا -->
+    <div class="set-section">
+      <div class="set-label">🎨 لون الخلايا</div>
+      <div class="color-grid" id="color-grid"></div>
+    </div>
+
+    <!-- أزرار البدء -->
+    <div class="set-btns">
+      <div class="set-btns-row">
+        <button class="set-btn set-btn-p" onclick="startGame('host')">🎮 وضع المضيف</button>
+        <button class="set-btn set-btn-g" onclick="startGame('self')">🕹️ بدون مقدم</button>
+      </div>
+      <div class="set-btns-row">
+        <button class="set-btn set-btn-o" onclick="startGame('display')">📺 شاشة العرض</button>
+        <button class="set-btn set-btn-o" onclick="show('sol')">🌐 أونلاين</button>
+      </div>
+    </div>
+  </div>
+  <footer><b>جوابك v7</b> &nbsp;•&nbsp; <b>حروف، تنافس، إبداع</b></footer>
+</div>
+
+<!-- ════════════════════════════════════════════════════════
+     شاشة المضيف (Host Screen)
+     ════════════════════════════════════════════════════════ -->
+<div id="sh" class="scr">
+  <div class="hdr">
+    <div class="hlogo" id="h-comp-name">جوابك</div>
+    <div class="hsc">
+      <div class="sc sc-1"><span id="hnr">الأحمر</span><span class="scn" id="hsr">0</span></div>
+      <div class="sc sc-2"><span class="scn" id="hsb">0</span><span id="hnb">الأزرق</span></div>
+    </div>
+    <div class="hbts">
+      <button class="hbt" onclick="goDisp()">📺</button>
+      <button class="hbt" onclick="resetGame()">🔄</button>
+      <button class="hbt" onclick="show('s-settings')">⚙️</button>
+    </div>
+  </div>
+  <div class="hbody">
+    <div class="garea">
+      <div class="hwrap">
+        <div class="darr darr-t"><div class="dd" style="background:var(--t1)"></div><span id="dlr">الفريق 1</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-b"><div class="dd" style="background:var(--t1)"></div><span>يوصّل أعلى بأسفل ↕</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-r"><div class="dd" style="background:var(--t2)"></div><span id="dlb">الفريق 2</span></div>
+        <div class="darr darr-l"><div class="dd" style="background:var(--t2)"></div><span>يوصّل يمين بيسار ↔</span></div>
+        <div class="hxgrid" id="hgrid"></div>
+      </div>
+    </div>
+    <div class="rpanel">
+      <div class="rps">
+        <div class="rpl">الخلية المفعّلة</div>
+        <div class="albox"><div class="alch" id="hpl">—</div><div class="alsb">انقر على خلية من الشبكة</div></div>
+      </div>
+      <div class="rps">
+        <div class="rpl">السؤال</div>
+        <div class="nosel" id="hpno">اختر خلية لعرض السؤال</div>
+        <div class="qcard" id="hpqc">
+          <div class="qdif" id="hpd">⭐ سهل</div>
+          <div class="qtxt" id="hpq"></div>
+          <div class="ansb"><span class="ansl">الجواب</span><span class="ansv" id="hpa"></span></div>
+          <!-- نظام المساعدة الذكي - 3 مراحل -->
+          <button class="btnhint" id="bh" onclick="openHintPanel()">💡 طلب مساعدة</button>
+          <div class="hint-sys" id="hint-sys">
+            <div class="hint-sys-title">💡 المساعدة</div>
+            <div class="hint-levels">
+              <button class="hlvl" id="hl1" onclick="giveHint(1)"><span class="hlvl-icon">🔤</span><span class="hlvl-txt">الحرف الأول</span><span class="hlvl-cost">مجانية</span></button>
+              <button class="hlvl" id="hl2" onclick="giveHint(2)"><span class="hlvl-icon">✂️</span><span class="hlvl-txt">حروف ناقصة</span><span class="hlvl-cost hlvl-c2">5- ثوانٍ</span></button>
+              <button class="hlvl" id="hl3" onclick="giveHint(3)"><span class="hlvl-icon">💬</span><span class="hlvl-txt">تلميح مباشر</span><span class="hlvl-cost hlvl-c3">10- ثوانٍ</span></button>
+            </div>
+            <div class="hint-reveal" id="hint-reveal"></div>
+          </div>
+          <button class="btnchg" onclick="changeQ()">🔄 تغيير السؤال</button>
+        </div>
+      </div>
+      <div class="rps">
+        <div class="rpl">الحكم</div>
+        <div class="jrow">
+          <button class="jbt jbr" id="jbr" onclick="judge('r')" disabled>✅ <span id="jlr">الفريق 1</span></button>
+          <button class="jbt jbb" id="jbb" onclick="judge('b')" disabled>✅ <span id="jlb">الفريق 2</span></button>
+        </div>
+        <button class="jbw" id="jbw" onclick="judgeWrong()" disabled>❌ إجابة خاطئة — حجب 10ث</button>
+        <div class="lkbx" id="lkbx"><div class="lknum" id="lkn">10</div><div class="lklbl">ثانية قبل الإفراج</div></div>
+      </div>
+      <div class="rps"><div class="rpl">الحالة</div><div class="stxt" id="hpst">اختر خلية لبدء اللعب</div></div>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ شاشة العرض ════ -->
+<div id="sd" class="scr">
+  <div class="hdr">
+    <div class="hlogo" style="font-size:22px" id="d-comp-name">جوابك</div>
+    <div class="hsc">
+      <div class="sc sc-1"><span id="dnr">الفريق 1</span><span class="scn" id="dsr">0</span></div>
+      <div class="sc sc-2"><span class="scn" id="dsb">0</span><span id="dnb">الفريق 2</span></div>
+    </div>
+    <div class="hbts">
+      <button class="hbt" onclick="show('sh')">🎮 المضيف</button>
+      <button class="hbt" onclick="show('s-settings')">🏠</button>
+    </div>
+  </div>
+  <div class="dbody">
+    <div class="hwrap">
+      <div class="darr darr-t"><div class="dd" style="background:var(--t1)"></div><span id="d-dlr">الفريق 1</span><div class="dd" style="background:var(--t1)"></div></div>
+      <div class="darr darr-b"><div class="dd" style="background:var(--t1)"></div><span>أعلى ↔ أسفل</span><div class="dd" style="background:var(--t1)"></div></div>
+      <div class="darr darr-r"><div class="dd" style="background:var(--t2)"></div><span id="d-dlb">الفريق 2</span></div>
+      <div class="darr darr-l"><div class="dd" style="background:var(--t2)"></div><span>يمين ↔ يسار</span></div>
+      <div class="hxgrid" id="dgrid"></div>
+    </div>
+  </div>
+  <div class="dal" id="dal"><div class="dal-l">الحرف المطلوب</div><div class="dal-c" id="dalc">—</div></div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ اللعب الثنائي ════ -->
+<div id="ss" class="scr">
+  <div class="hdr">
+    <div class="hlogo">جوابك</div>
+    <div class="hsc">
+      <div class="sc sc-1"><span id="snr">الفريق 1</span><span class="scn" id="ssr">0</span></div>
+      <div class="sc sc-2"><span class="scn" id="ssb">0</span><span id="snb">الفريق 2</span></div>
+    </div>
+    <div class="hbts">
+      <button class="hbt" onclick="resetGame();show('ss')">🔄</button>
+      <button class="hbt" onclick="show('s-settings')">🏠</button>
+    </div>
+  </div>
+  <div class="sbody">
+    <!-- لوحة الأزرق -->
+    <div class="ssp ssp-b">
+      <div class="sph sph-b">🔵 <span id="sp-nb">الفريق 2</span><span class="spsc" id="sp-sb">0</span></div>
+      <div class="spsec">
+        <div class="spl">السؤال</div>
+        <div class="nosel" id="sp-bno">اختر خلية</div>
+        <div style="display:none" id="sp-bqc">
+          <div class="spqt" id="sp-bq"></div>
+          <div class="spans" id="sp-bans"><span class="ansl">الجواب</span><span class="ansv" id="sp-bav"></span></div>
+          <div class="sphint" id="sp-bhint"></div>
+        </div>
+      </div>
+      <div class="splkbx" id="sp-blk"><div class="lknum" id="sp-bln">10</div><div class="lklbl">ثانية حجب</div></div>
+      <div class="spbtns">
+        <button class="spb spb-cb" id="sp-bcor" onclick="spJudge('b')" disabled>✅ الفريق 2 أجاب صح</button>
+        <button class="spb spb-rv" id="sp-brev" onclick="spReveal()" disabled>👁️ كشف الجواب</button>
+        <button class="spb spb-ht" id="sp-bhb" onclick="spHint()" disabled>💡 مساعدة (مجانية)</button>
+        <button class="spb spb-wg" id="sp-bwrg" onclick="spWrong('b')" disabled>❌ خطأ — حجب 10ث</button>
+        <button class="spb spb-cg" id="sp-bchg" onclick="spChangeQ()" disabled>🔄 تغيير السؤال</button>
+      </div>
+    </div>
+    <!-- الشبكة -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:16px;overflow:hidden">
+      <div class="hwrap">
+        <div class="darr darr-t"><div class="dd" style="background:var(--t1)"></div><span id="sp-dlr">الفريق 1</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-b"><div class="dd" style="background:var(--t1)"></div><span>أعلى ↔ أسفل ↕</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-r"><div class="dd" style="background:var(--t2)"></div><span id="sp-dlb">الفريق 2</span></div>
+        <div class="darr darr-l"><div class="dd" style="background:var(--t2)"></div><span>يمين ↔ يسار ↔</span></div>
+        <div class="hxgrid" id="sgrid"></div>
+      </div>
+    </div>
+    <!-- لوحة الأحمر -->
+    <div class="ssp ssp-r">
+      <div class="sph sph-r">🔴 <span id="sp-nr">الفريق 1</span><span class="spsc" id="sp-sr">0</span></div>
+      <div class="spsec">
+        <div class="spl">السؤال</div>
+        <div class="nosel" id="sp-rno">اختر خلية</div>
+        <div style="display:none" id="sp-rqc">
+          <div class="spqt" id="sp-rq"></div>
+          <div class="spans" id="sp-rans"><span class="ansl">الجواب</span><span class="ansv" id="sp-rav"></span></div>
+          <div class="sphint" id="sp-rhint"></div>
+        </div>
+      </div>
+      <div class="splkbx" id="sp-rlk"><div class="lknum" id="sp-rln">10</div><div class="lklbl">ثانية حجب</div></div>
+      <div class="spbtns">
+        <button class="spb spb-cr" id="sp-rcor" onclick="spJudge('r')" disabled>✅ الفريق 1 أجاب صح</button>
+        <button class="spb spb-rv" id="sp-rrev" onclick="spReveal()" disabled>👁️ كشف الجواب</button>
+        <button class="spb spb-ht" id="sp-rhb" onclick="spHint()" disabled>💡 مساعدة (مجانية)</button>
+        <button class="spb spb-wg" id="sp-rwrg" onclick="spWrong('r')" disabled>❌ خطأ — حجب 10ث</button>
+        <button class="spb spb-cg" id="sp-rchg" onclick="spChangeQ()" disabled>🔄 تغيير السؤال</button>
+      </div>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ اللوبي الأونلاين ════ -->
+<div id="sol" class="scr">
+  <div style="text-align:center">
+    <div style="font-size:42px;font-weight:900;background:linear-gradient(135deg,#fff,var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">جوابك 🌐</div>
+    <div style="font-size:11px;color:var(--dim);letter-spacing:3px;margin-top:4px">اللعب الأونلاين</div>
+  </div>
+  <div class="olcard">
+    <div class="oltabs">
+      <div class="oltab active" id="tab-c" onclick="olTab('c')">🆕 إنشاء غرفة</div>
+      <div class="oltab" id="tab-j" onclick="olTab('j')">🚪 انضمام</div>
+    </div>
+    <div class="olsec on" id="sec-c">
+      <div class="olll">اسمك في اللعبة</div>
+      <input class="oli" id="ol-cn" placeholder="اكتب اسمك..." maxlength="14" value="اللاعب 1">
+      <div class="olll">اختر فريقك</div>
+      <div class="team-pick">
+        <div class="tpb" id="olc-tr" onclick="olPickTeam('c','r')">🔴 الفريق 1</div>
+        <div class="tpb" id="olc-tb" onclick="olPickTeam('c','b')">🔵 الفريق 2</div>
+      </div>
+      <button class="olbtn olbtn-p" onclick="olCreate()">🆕 إنشاء غرفة جديدة</button>
+      <button class="olbtn olbtn-o" onclick="show('s-settings')">← رجوع</button>
+      <div class="olst" id="ol-cst"></div>
+    </div>
+    <div class="olsec" id="sec-j">
+      <div class="olll">اسمك في اللعبة</div>
+      <input class="oli" id="ol-jn" placeholder="اكتب اسمك..." maxlength="14" value="اللاعب 2">
+      <div class="olll">كود الغرفة (7 أرقام)</div>
+      <input class="oli" id="ol-jcode" placeholder="0000000" maxlength="7" style="text-align:center;letter-spacing:6px;font-size:20px" oninput="this.value=this.value.replace(/\D/g,'')">
+      <div class="olll">اختر فريقك</div>
+      <div class="team-pick">
+        <div class="tpb" id="olj-tr" onclick="olPickTeam('j','r')">🔴 الفريق 1</div>
+        <div class="tpb" id="olj-tb" onclick="olPickTeam('j','b')">🔵 الفريق 2</div>
+      </div>
+      <button class="olbtn olbtn-p" onclick="olJoin()">🚪 انضمام للغرفة</button>
+      <button class="olbtn olbtn-o" onclick="show('s-settings')">← رجوع</button>
+      <div class="olst" id="ol-jst"></div>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ غرفة الانتظار ════ -->
+<div id="sowait" class="scr">
+  <div class="hdr">
+    <div class="hlogo">انتظار اللاعبين 🕐</div>
+    <div class="hbts"><button class="hbt" onclick="olLeave()">🚪 خروج</button></div>
+  </div>
+  <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px">
+    <div class="olcard" style="width:min(500px,95vw)">
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:11px;color:var(--dim);margin-bottom:5px">شارك هذا الكود مع أصدقائك</div>
+        <div class="olcode" id="room-code">-------</div>
+        <!-- QR Code -->
+        <div class="qr-wrap">
+          <img id="qr-img" src="" alt="QR Code" width="120" height="120" style="display:none">
+          <div class="qr-label" id="qr-label"></div>
+        </div>
+      </div>
+      <div class="pslots" id="pslots"></div>
+      <button class="olstart" id="olstart-btn" onclick="olStartGame()" disabled>⏳ في انتظار اللاعبين (1/4)</button>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ اللعبة الأونلاين ════ -->
+<div id="song" class="scr">
+  <div class="hdr">
+    <div class="hlogo">جوابك 🌐</div>
+    <div class="hsc">
+      <div class="sc sc-1"><span id="og-nr">الفريق 1</span><span class="scn" id="og-sr">0</span></div>
+      <div class="sc sc-2"><span class="scn" id="og-sb">0</span><span id="og-nb">الفريق 2</span></div>
+    </div>
+    <div class="hbts"><button class="hbt" onclick="olLeave()">🚪 خروج</button></div>
+  </div>
+  <div class="ogbody">
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:14px;overflow:hidden">
+      <div class="hwrap">
+        <div class="darr darr-t"><div class="dd" style="background:var(--t1)"></div><span id="og-dlr">الفريق 1</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-b"><div class="dd" style="background:var(--t1)"></div><span>يوصّل أعلى بأسفل</span><div class="dd" style="background:var(--t1)"></div></div>
+        <div class="darr darr-r"><div class="dd" style="background:var(--t2)"></div><span id="og-dlb">الفريق 2</span></div>
+        <div class="darr darr-l"><div class="dd" style="background:var(--t2)"></div><span>يوصّل يمين بيسار</span></div>
+        <div class="hxgrid" id="ogrid"></div>
+      </div>
+    </div>
+    <div class="ogpanel">
+      <div class="ogqbox">
+        <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(190,150,255,.8);margin-bottom:7px">السؤال الحالي</div>
+        <div class="ogqtxt" id="og-q">في انتظار بدء الدور...</div>
+        <div class="ogqltr" id="og-ltr"></div>
+      </div>
+      <div id="og-ans-area" style="display:none">
+        <input class="oginput" id="og-ai" placeholder="اكتب جوابك هنا..." autocomplete="off" oninput="olCheckAnswer(this.value)">
+        <div class="ogspeed">⚡ أسرع واحد يكتب الجواب الصح يفوز بالخلية</div>
+      </div>
+      <div class="ogflash" id="og-flash"></div>
+      <div class="ogplist-hdr">اللاعبون</div>
+      <div id="og-plist"></div>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<!-- ════ شاشة الفوز ════ -->
+<div id="swin" class="scr">
+  <div class="rings" id="win-rings"></div>
+  <div class="winwrap">
+    <div class="win-crown">👑</div>
+    <div class="win-sup">مبروووك الفوز! 🎉</div>
+    <div class="win-name" id="wnam"></div>
+    <div class="win-desc" id="wdsc"></div>
+    <div class="win-btns">
+      <button class="wbtn wbtn1" onclick="resetGame();show(G._lm||'sh')">🔄 جولة جديدة</button>
+      <button class="wbtn wbtn2" onclick="show('s-settings')">🏠 الرئيسية</button>
+    </div>
+  </div>
+  <footer><b>جوابك v6</b></footer>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════
+   Firebase Configuration — جوابك v7
+   ════════════════════════════════════════════════════════
+   خطوات إعداد Firebase:
+   1. اذهب إلى: https://console.firebase.google.com
+   2. أنشئ مشروعاً جديداً باسم "jawabak" مثلاً
+   3. من القائمة الجانبية اختر: Build > Realtime Database
+   4. اضغط "Create Database"، اختر أقرب موقع، ثم "Start in Test Mode"
+   5. من تبويب "Rules" ضع هذه القواعد:
+      {
+        "rules": {
+          ".read": true,
+          ".write": true
+        }
+      }
+      ثم اضغط "Publish"
+   6. اذهب إلى Project Settings > General > Your Apps
+   7. أضف Web App، ستحصل على الـ Config — انسخه هنا:
+   ════════════════════════════════════════════════════════ */
+const FBCFG = {
+  apiKey: "AIzaSyDL2G8Abp6vOZs7Bjv6PDqtXQgfJn5AL9I",
+  authDomain: "jjwabk-f15e2.firebaseapp.com",
+  databaseURL: "https://jjwabk-f15e2-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "jjwabk-f15e2",
+  storageBucket: "jjwabk-f15e2.firebasestorage.app",
+  messagingSenderId: "901043441100",
+  appId: "1:901043441100:web:4a36a9dd705512674e2169"
+};
+let fbDB = null, fbRoomRef = null;
+try {
+  firebase.initializeApp(FBCFG);
+  fbDB = firebase.database();
+} catch(e) { console.warn('Firebase:', e.message); }
+
+/* ════════════════════════════════════════════════════════
+   ثيمات الألوان — 8 خيارات للفريقين
+   t1 = الفريق الأول (يوصّل يمين بيسار)
+   t2 = الفريق الثاني (يوصّل أعلى بأسفل)
+   ════════════════════════════════════════════════════════ */
+const THEMES = [
+  { id:0, t1:'#e8601e', t1_2:'#ff9055', t1_bg:'rgba(232,96,30,.18)',
+         t2:'#1c72ee', t2_2:'#70baff', t2_bg:'rgba(28,114,238,.18)' },
+  { id:1, t1:'#22c55e', t1_2:'#6ee89a', t1_bg:'rgba(34,197,94,.18)',
+         t2:'#a855f7', t2_2:'#d8a0ff', t2_bg:'rgba(168,85,247,.18)' },
+  { id:2, t1:'#ef4444', t1_2:'#fca5a5', t1_bg:'rgba(239,68,68,.18)',
+         t2:'#f59e0b', t2_2:'#fcd34d', t2_bg:'rgba(245,158,11,.18)' },
+  { id:3, t1:'#06b6d4', t1_2:'#67e8f9', t1_bg:'rgba(6,182,212,.18)',
+         t2:'#ec4899', t2_2:'#f9a8d4', t2_bg:'rgba(236,72,153,.18)' },
+  { id:4, t1:'#84cc16', t1_2:'#bef264', t1_bg:'rgba(132,204,22,.18)',
+         t2:'#f97316', t2_2:'#fed7aa', t2_bg:'rgba(249,115,22,.18)' },
+  { id:5, t1:'#8b5cf6', t1_2:'#c4b5fd', t1_bg:'rgba(139,92,246,.18)',
+         t2:'#14b8a6', t2_2:'#99f6e4', t2_bg:'rgba(20,184,166,.18)' },
+  { id:6, t1:'#dc2626', t1_2:'#fca5a5', t1_bg:'rgba(220,38,38,.18)',
+         t2:'#2563eb', t2_2:'#93c5fd', t2_bg:'rgba(37,99,235,.18)' },
+  { id:7, t1:'#d97706', t1_2:'#fcd34d', t1_bg:'rgba(217,119,6,.18)',
+         t2:'#0284c7', t2_2:'#7dd3fc', t2_bg:'rgba(2,132,199,.18)' },
+];
+let currentTheme = 0;
+
+/* ════════════════════════════════════════════════════════
+   بناء شاشة الإعدادات
+   ════════════════════════════════════════════════════════ */
+function buildSettingsUI() {
+  /* بناء شبكة الألوان */
+  const cg = document.getElementById('color-grid');
+  THEMES.forEach((th, i) => {
+    const sw = document.createElement('div');
+    sw.className = 'color-swatch' + (i === 0 ? ' selected' : '');
+    sw.title = `ثيم ${i+1}`;
+    const h1 = document.createElement('div');
+    h1.className = 'cs-half';
+    h1.style.background = th.t1;
+    const h2 = document.createElement('div');
+    h2.className = 'cs-half';
+    h2.style.background = th.t2;
+    sw.append(h1, h2);
+    sw.addEventListener('click', () => {
+      document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
+      sw.classList.add('selected');
+      applyTheme(i);
+    });
+    cg.appendChild(sw);
+  });
+
+  /* مجموعات الراديو */
+  setupRadioGroup('rg-rounds', CFG, 'rounds');
+  setupRadioGroup('rg-size', CFG, 'size');
+}
+
+function setupRadioGroup(groupId, obj, prop) {
+  const group = document.getElementById(groupId);
+  group.querySelectorAll('.radio-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      group.querySelectorAll('.radio-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      obj[prop] = parseInt(btn.dataset.v) || btn.dataset.v;
+    });
+  });
+}
+
+/* تطبيق الثيم على متغيرات CSS */
+function applyTheme(idx) {
+  currentTheme = idx;
+  const th = THEMES[idx];
+  const r = document.documentElement.style;
+  r.setProperty('--t1', th.t1);
+  r.setProperty('--t1-2', th.t1_2);
+  r.setProperty('--t1-bg', th.t1_bg);
+  r.setProperty('--t1-hex', th.t1);
+  r.setProperty('--t2', th.t2);
+  r.setProperty('--t2-2', th.t2_2);
+  r.setProperty('--t2-bg', th.t2_bg);
+  r.setProperty('--t2-hex', th.t2);
+  // تحديث نقاط الأسماء في الإعدادات
+  document.getElementById('dot1').style.background = th.t1;
+  document.getElementById('dot2').style.background = th.t2;
+}
+
+/* ════════════════════════════════════════════════════════
+   إعدادات اللعبة (Config)
+   ════════════════════════════════════════════════════════ */
+const CFG = {
+  name: 'مسابقة جوابك',
+  rounds: 1,
+  size: 5,
+  autoWin: true,
+};
+
+function readConfig() {
+  CFG.name   = document.getElementById('cfg-name').value.trim() || 'مسابقة جوابك';
+  CFG.rounds = parseInt(document.querySelector('#rg-rounds .radio-btn.active')?.dataset.v) || 1;
+  CFG.size   = parseInt(document.querySelector('#rg-size .radio-btn.active')?.dataset.v) || 5;
+  CFG.autoWin = document.getElementById('cfg-autowin').checked;
+}
+
+/* ════════════════════════════════════════════════════════
+   قاعدة بيانات الأسئلة — 500+ سؤال
+   الحقول: l=الحرف، d=الصعوبة، q=السؤال، a=الجواب، h=مساعدة
+   ════════════════════════════════════════════════════════ */
+const QDB = [
+/* ════ أ ════ */
+{l:'أ',d:'سهل',q:'ما هو العنصر الذي رمزه O؟',a:'الأكسجين',h:'نتنفسه كل يوم'},
+{l:'أ',d:'سهل',q:'ما هي عاصمة الإمارات؟',a:'أبوظبي',h:'على الخليج العربي'},
+{l:'أ',d:'متوسط',q:'ما هي أصغر قارة في العالم؟',a:'أستراليا',h:'بها الكنغر'},
+{l:'أ',d:'سهل',q:'ما اسم أكبر غابة مطرية؟',a:'الأمازون',h:'في أمريكا الجنوبية'},
+{l:'أ',d:'متوسط',q:'ما هو أعلى جبل في العالم؟',a:'إيفرست',h:'في الهيمالايا'},
+{l:'أ',d:'سهل',q:'كم عدد أيام السنة العادية؟',a:'365',h:'366 في الكبيسة'},
+{l:'أ',d:'صعب',q:'ما عاصمة نيجيريا؟',a:'أبوجا',h:'أكبر دول أفريقيا'},
+{l:'أ',d:'سهل',q:'ما أكبر بلد في العالم مساحةً؟',a:'روسيا',h:'تمتد على قارتين'},
+{l:'أ',d:'متوسط',q:'كم عدد أضلاع المضلع السداسي؟',a:'ستة',h:'مثل قرص العسل'},
+{l:'أ',d:'صعب',q:'ما الغاز المستخدم في لمبات النيون؟',a:'النيون',h:'رمزه Ne'},
+{l:'أ',d:'سهل',q:'ما هي عاصمة الأرجنتين؟',a:'بوينس آيرس',h:'في أمريكا الجنوبية'},
+{l:'أ',d:'متوسط',q:'ما اسم أشهر ملعب كرة قدم في إسبانيا؟',a:'سانتياغو برنابيو',h:'ملعب ريال مدريد'},
+{l:'أ',d:'سهل',q:'ما هو البلد الذي تُصنع فيه سيارات BMW؟',a:'ألمانيا',h:'دولة أوروبية'},
+{l:'أ',d:'صعب',q:'ما اسم أول رائد فضاء عربي؟',a:'سلطان بن سلمان',h:'سعودي عام 1985'},
+{l:'أ',d:'متوسط',q:'من اخترع الطائرة؟',a:'الأخوان رايت',h:'طيرانها الأول 1903'},
+{l:'أ',d:'سهل',q:'ما لغة القرآن الكريم؟',a:'العربية',h:'لغة الضاد'},
+{l:'أ',d:'متوسط',q:'ما هو اسم الكوكب الذي يسبح على ظهره؟',a:'أورانوس',h:'ميلانه 98 درجة'},
+{l:'أ',d:'سهل',q:'ما هي عاصمة أستراليا؟',a:'كانبيرا',h:'ليست سيدني'},
+/* ════ ب ════ */
+{l:'ب',d:'سهل',q:'ما هي عاصمة فرنسا؟',a:'باريس',h:'مدينة برج إيفل'},
+{l:'ب',d:'سهل',q:'ما هي عاصمة ألمانيا؟',a:'برلين',h:'كانت مقسمة بجدار'},
+{l:'ب',d:'سهل',q:'ما هو أطول مبنى في العالم؟',a:'برج خليفة',h:'في دبي'},
+{l:'ب',d:'متوسط',q:'ما هي عاصمة البرازيل؟',a:'برازيليا',h:'ليست ريو دي جانيرو'},
+{l:'ب',d:'صعب',q:'ما هو أعمق بحيرة في العالم؟',a:'بايكال',h:'في روسيا'},
+{l:'ب',d:'سهل',q:'ما عدد أضلاع المربع؟',a:'أربعة',h:'شكل هندسي منتظم'},
+{l:'ب',d:'سهل',q:'ما هو اختراع الكيمياء الذي يُستخدم في الخبز؟',a:'البيكنج بودر',h:'يرفع العجين'},
+{l:'ب',d:'متوسط',q:'ما هو البلد الأكثر كثافة سكانية في العالم؟',a:'الهند',h:'تجاوزت الصين مؤخرا'},
+{l:'ب',d:'صعب',q:'ما اسم أول ملحمة شعرية في التاريخ؟',a:'ملحمة جلجامش',h:'من العراق القديم'},
+{l:'ب',d:'سهل',q:'ما هي عاصمة البحرين؟',a:'المنامة',h:'دولة خليجية جزيرة'},
+{l:'ب',d:'متوسط',q:'ما الرياضة التي يلعبها فريق برشلونة؟',a:'كرة القدم',h:'النادي الكتالوني'},
+{l:'ب',d:'سهل',q:'ما هو المعدن السائل الوحيد في درجة الحرارة العادية؟',a:'الزئبق',h:'يُستخدم في الترمومتر'},
+{l:'ب',d:'صعب',q:'ما هو أقصر دولة في العالم ارتفاعاً عن سطح البحر؟',a:'بنغلاديش',h:'دلتا نهر الغانج'},
+/* ════ ت ════ */
+{l:'ت',d:'صعب',q:'من اخترع الويب (الإنترنت)؟',a:'تيم بيرنرز لي',h:'عالم بريطاني'},
+{l:'ت',d:'متوسط',q:'ما هي عاصمة تركيا؟',a:'أنقرة',h:'ليست إسطنبول'},
+{l:'ت',d:'سهل',q:'ما هي عاصمة تونس؟',a:'تونس',h:'نفس اسم البلد'},
+{l:'ت',d:'سهل',q:'كم لاعباً في فريق كرة القدم؟',a:'أحد عشر',h:'11 لاعب في الملعب'},
+{l:'ت',d:'متوسط',q:'ما اسم أشهر فيلسوف يوناني قديم؟',a:'أرسطو',h:'معلم الإسكندر الأكبر'},
+{l:'ت',d:'سهل',q:'ما الجهاز الذي يضخ الدم في الجسم؟',a:'القلب',h:'ينبض كل لحظة'},
+{l:'ت',d:'صعب',q:'ما هو اسم مؤسس الدولة السعودية الأولى؟',a:'محمد بن سعود',h:'القرن 18 الميلادي'},
+{l:'ت',d:'متوسط',q:'ما هو الجهاز الذي يُستخدم لقياس ضغط الدم؟',a:'السفينجمانومتر',h:'يلف حول الذراع'},
+/* ════ ث ════ */
+{l:'ث',d:'سهل',q:'كم عدد أيام السنة الكبيسة؟',a:'366',h:'تزيد يوماً عن العادية'},
+{l:'ث',d:'سهل',q:'كم عدد أضلاع المثلث؟',a:'ثلاثة',h:'أبسط شكل هندسي'},
+{l:'ث',d:'متوسط',q:'كم عدد كواكب المجموعة الشمسية؟',a:'ثمانية',h:'بلوتو خرج من القائمة'},
+{l:'ث',d:'صعب',q:'من هو مؤلف كتاب ألف ليلة وليلة؟',a:'مجهول',h:'قصص شهرزاد الشهيرة'},
+{l:'ث',d:'متوسط',q:'ما هي ثلاثة حالات المادة الأساسية؟',a:'صلب وسائل وغاز',h:'الماء نموذج على الثلاثة'},
+{l:'ث',d:'سهل',q:'ما هو الثدييات التي تنجب صغاراً وترضعها؟',a:'الثدييات',h:'الفئة العلمية لها'},
+/* ════ ج ════ */
+{l:'ج',d:'سهل',q:'ما هو أكبر عضو في جسم الإنسان؟',a:'الجلد',h:'يغطي جسمك كله'},
+{l:'ج',d:'متوسط',q:'ما اسم أطول سلسلة جبلية في العالم؟',a:'جبال الأنديز',h:'في أمريكا الجنوبية'},
+{l:'ج',d:'سهل',q:'ما هو اكتشاف نيوتن الشهير؟',a:'الجاذبية',h:'تفاحة سقطت على رأسه'},
+{l:'ج',d:'صعب',q:'ما اسم أقدم جامعة في العالم؟',a:'جامعة القرويين',h:'في المغرب'},
+{l:'ج',d:'سهل',q:'ما هي عاصمة الجزائر؟',a:'الجزائر',h:'نفس اسم البلد'},
+{l:'ج',d:'متوسط',q:'ما هو البلد الأكثر إنتاجاً للقهوة؟',a:'البرازيل',h:'في أمريكا الجنوبية'},
+{l:'ج',d:'صعب',q:'ما عدد عظام جسم الإنسان البالغ؟',a:'206',h:'تتناقص مع نمو الطفل'},
+{l:'ج',d:'سهل',q:'ما اسم النجم الذي كان يُهدى به العرب؟',a:'الجدي',h:'نجم الشمال'},
+{l:'ج',d:'متوسط',q:'ما اسم أشهر فاتح إسلامي مكّن الإسلام من الأندلس؟',a:'طارق بن زياد',h:'فتح إسبانيا'},
+/* ════ ح ════ */
+{l:'ح',d:'سهل',q:'ما هو أكبر ثدييات البحر؟',a:'الحوت الأزرق',h:'أضخم حيوان على الإطلاق'},
+{l:'ح',d:'سهل',q:'ما الحيوان الذي ينام واقفاً؟',a:'الحصان',h:'يُركب ويسابق'},
+{l:'ح',d:'صعب',q:'ما المادة التي تعطي النبات لونه الأخضر؟',a:'الكلوروفيل',h:'يمتص ضوء الشمس'},
+{l:'ح',d:'متوسط',q:'في أي دولة توجد الأهرامات؟',a:'مصر',h:'على ضفاف النيل'},
+{l:'ح',d:'سهل',q:'ما الحيوان المعروف بذاكرته القوية؟',a:'الفيل',h:'أكبر الحيوانات البرية'},
+{l:'ح',d:'متوسط',q:'ما هو عدد الحواس الأساسية لدى الإنسان؟',a:'خمسة',h:'سمع، بصر، لمس، ذوق، شم'},
+{l:'ح',d:'صعب',q:'ما اسم أول عاصمة للإسلام؟',a:'المدينة المنورة',h:'هاجر إليها النبي ﷺ'},
+{l:'ح',d:'سهل',q:'من رسّخ حقوق الإنسان في الإعلان العالمي عام 1948؟',a:'الأمم المتحدة',h:'منظمة دولية'},
+/* ════ خ ════ */
+{l:'خ',d:'متوسط',q:'ما اسم أشهر عالم رياضيات إسلامي؟',a:'الخوارزمي',h:'اسمه أصبح Algorithm'},
+{l:'خ',d:'متوسط',q:'ما هو الثديي الوحيد الذي يطير؟',a:'الخفاش',h:'يطير ليلاً'},
+{l:'خ',d:'صعب',q:'ما اسم أعمق خندق في المحيطات؟',a:'خندق ماريانا',h:'في المحيط الهادئ'},
+{l:'خ',d:'سهل',q:'ما هي عاصمة السودان؟',a:'الخرطوم',h:'على ضفاف النيل'},
+{l:'خ',d:'سهل',q:'ما الخلية التي لا نواة لها؟',a:'خلية الدم الحمراء',h:'تحمل الأكسجين'},
+{l:'خ',d:'متوسط',q:'ما هو البروتين الذي يُشكّل الشعر والأظافر؟',a:'الكيراتين',h:'بروتين هيكلي'},
+/* ════ د ════ */
+{l:'د',d:'سهل',q:'ما هو الحيوان الذي ينتج الحرير؟',a:'دودة القز',h:'تصنع شرنقة'},
+{l:'د',d:'سهل',q:'ما هي عاصمة قطر؟',a:'الدوحة',h:'على الخليج العربي'},
+{l:'د',d:'متوسط',q:'ما اسم عالم نظرية التطور؟',a:'داروين',h:'درس جزر غالاباغوس'},
+{l:'د',d:'صعب',q:'ما هي عاصمة بروناي؟',a:'بندر سيري بيغاوان',h:'دولة في بورنيو'},
+{l:'د',d:'سهل',q:'ما اسم الكتاب المقدس للمسلمين؟',a:'القرآن الكريم',h:'كلام الله تعالى'},
+{l:'د',d:'متوسط',q:'ما هو الجهاز في الجسم الذي يُصفّي الدم؟',a:'الكلية',h:'نملك كليتين'},
+{l:'د',d:'سهل',q:'كم يساوي الدرجة المئوية 100 درجة بالفهرنهايت؟',a:'212',h:'نقطة غليان الماء'},
+/* ════ ذ ════ */
+{l:'ذ',d:'سهل',q:'ما هو المعدن الأصفر الثمين؟',a:'الذهب',h:'رمزه Au'},
+{l:'ذ',d:'متوسط',q:'ما هو الحيوان الذي يصيد في قطعان؟',a:'الذئب',h:'يعوي في الليل'},
+{l:'ذ',d:'صعب',q:'ما اسم أشهر عالم فيزياء عربي قديم؟',a:'ابن الهيثم',h:'اخترع أساسيات البصريات'},
+{l:'ذ',d:'سهل',q:'ما اسم الغدة التي تُنتج هرمون الأنسولين؟',a:'البنكرياس',h:'تحت المعدة'},
+/* ════ ر ════ */
+{l:'ر',d:'سهل',q:'ما هي عاصمة المملكة العربية السعودية؟',a:'الرياض',h:'وسط الجزيرة العربية'},
+{l:'ر',d:'سهل',q:'ما هي عاصمة إيطاليا؟',a:'روما',h:'مدينة الكولوسيوم'},
+{l:'ر',d:'صعب',q:'ما هو أصغر عظمة في جسم الإنسان؟',a:'الركابة',h:'في الأذن الداخلية'},
+{l:'ر',d:'متوسط',q:'ما اسم أشهر ملك فرعوني؟',a:'رمسيس الثاني',h:'بنى أبو سمبل'},
+{l:'ر',d:'سهل',q:'ما هي عاصمة روسيا؟',a:'موسكو',h:'أكبر مدن أوروبا'},
+{l:'ر',d:'متوسط',q:'ما هو الرياح الموسمية التي تؤثر على آسيا؟',a:'الرياح الموسمية',h:'تأتي بالأمطار في الصيف'},
+{l:'ر',d:'صعب',q:'ما اسم القائد العربي الذي حرر القدس من الصليبيين؟',a:'صلاح الدين الأيوبي',h:'1187م'},
+{l:'ر',d:'سهل',q:'ما هو أسرع وسيلة نقل حالياً؟',a:'الطائرة',h:'تقطع آلاف الكيلومترات'},
+/* ════ ز ════ */
+{l:'ز',d:'سهل',q:'ما الكوكب الذي له حلقات مميزة؟',a:'زحل',h:'السادس من الشمس'},
+{l:'ز',d:'سهل',q:'ما هو الحيوان الأطول رقبةً؟',a:'الزرافة',h:'أطول الثدييات'},
+{l:'ز',d:'متوسط',q:'ما هو الكوكب الأشد حرارةً؟',a:'الزهرة',h:'الثاني من الشمس'},
+{l:'ز',d:'صعب',q:'ما اسم أول فيلسوف قديم بحث في الذرة؟',a:'ديمقريطس',h:'يوناني قديم'},
+{l:'ز',d:'سهل',q:'ما هو اللون الذي يجمع الأزرق والأصفر؟',a:'الأخضر',h:'لون النباتات'},
+/* ════ س ════ */
+{l:'س',d:'سهل',q:'ما هو أطول جدار في التاريخ؟',a:'سور الصين العظيم',h:'آلاف الكيلومترات'},
+{l:'س',d:'سهل',q:'كم عدد ألوان قوس قزح؟',a:'سبعة',h:'أحمر برتقالي أصفر...'},
+{l:'س',d:'متوسط',q:'ما الحيوان الأطول عمراً؟',a:'السلحفاة',h:'بطيئة وطويلة العمر'},
+{l:'س',d:'سهل',q:'ما هي عاصمة سوريا؟',a:'دمشق',h:'أقدم عاصمة مأهولة'},
+{l:'س',d:'متوسط',q:'ما هو أكبر محيط في العالم؟',a:'المحيط الهادئ',h:'يحيط بالأمريكتين وآسيا'},
+{l:'س',d:'صعب',q:'ما اسم عالم الكيمياء الذي وضع الجدول الدوري؟',a:'مندليف',h:'روسي القرن 19'},
+{l:'س',d:'سهل',q:'ما اسم الكيس الذي يحفظ الجنين؟',a:'الرحم',h:'عضو الأنثى'},
+{l:'س',d:'متوسط',q:'ما هو السلاح الذكي الذي يستخدمه العسكر الأمريكي؟',a:'الطائرة المسيّرة',h:'بدون طيار'},
+/* ════ ش ════ */
+{l:'ش',d:'سهل',q:'ما هو النجم الأقرب إلى الأرض؟',a:'الشمس',h:'يشرق كل صباح'},
+{l:'ش',d:'متوسط',q:'ما اسم أشهر كاتب مسرحي؟',a:'شكسبير',h:'كتب هاملت وروميو'},
+{l:'ش',d:'صعب',q:'ما اسم أعلى شلال في العالم؟',a:'شلال أنجل',h:'في فنزويلا'},
+{l:'ش',d:'سهل',q:'ما هو أشهر رياضة في العالم؟',a:'كرة القدم',h:'يلعبها المليارات'},
+{l:'ش',d:'متوسط',q:'كم يوماً يبقى الصيام في رمضان؟',a:'30 أو 29 يوماً',h:'يختلف بحسب الرؤية'},
+{l:'ش',d:'صعب',q:'ما اسم أول رئيس للولايات المتحدة؟',a:'جورج واشنطن',h:'1789م'},
+/* ════ ص ════ */
+{l:'ص',d:'سهل',q:'ما هو أكبر صحراء حارة؟',a:'الصحراء الكبرى',h:'شمال أفريقيا'},
+{l:'ص',d:'سهل',q:'ما هي عاصمة اليمن؟',a:'صنعاء',h:'من أقدم المدن'},
+{l:'ص',d:'متوسط',q:'ما هو أسرع طائر انقضاضاً؟',a:'الصقر الشاهين',h:'320 كم/ساعة'},
+{l:'ص',d:'صعب',q:'ما اسم الشاعر الذي كتب قصيدة البردة؟',a:'البوصيري',h:'مدح النبي ﷺ'},
+{l:'ص',d:'سهل',q:'ما هو الصوت الذي يُصدره الأسد؟',a:'الزئير',h:'ملك الغابة'},
+/* ════ ض ════ */
+{l:'ض',d:'متوسط',q:'ما الحيوان الذي يتنفس عبر جلده؟',a:'الضفدع',h:'يعيش في الماء والبر'},
+{l:'ض',d:'سهل',q:'ما الحيوان الذي يصدر القهقهة؟',a:'الضبع',h:'مفترس في أفريقيا'},
+{l:'ض',d:'صعب',q:'ما هي ضريبة القيمة المضافة في السعودية؟',a:'15%',h:'رُفعت عام 2020'},
+{l:'ض',d:'متوسط',q:'ما اللغة التي يتكلمها أكثر الناس في العالم؟',a:'الصينية الماندرينية',h:'أكثر من مليار متحدث'},
+/* ════ ط ════ */
+{l:'ط',d:'سهل',q:'ما هي عاصمة اليابان؟',a:'طوكيو',h:'أكبر مدن العالم'},
+{l:'ط',d:'سهل',q:'ما هي عاصمة إيران؟',a:'طهران',h:'شمال إيران'},
+{l:'ط',d:'متوسط',q:'ما الطائر المعروف بريشه الجميل؟',a:'الطاووس',h:'الذكر له ريش رائع'},
+{l:'ط',d:'صعب',q:'ما اسم الفيزيائي الذي اكتشف قانون الإشعاع؟',a:'ماكس بلانك',h:'ألماني 1900م'},
+{l:'ط',d:'سهل',q:'ما هو أسرع حيوان بري؟',a:'الفهد',h:'120 كم/ساعة'},
+{l:'ط',d:'متوسط',q:'ما اسم الجبل الذي ينزل منه البراكين؟',a:'البركان',h:'ثوران يخرج منه الحمم'},
+/* ════ ظ ════ */
+{l:'ظ',d:'متوسط',q:'ما الحيوان الذي يرش سائلاً كريهاً دفاعاً؟',a:'الظربان',h:'في أمريكا الشمالية'},
+{l:'ظ',d:'سهل',q:'ما سبب ظاهرة المد والجزر؟',a:'جاذبية القمر',h:'تأثير القمر على الماء'},
+{l:'ظ',d:'صعب',q:'ما اسم الظاهرة الطبيعية التي تمتص كل شيء؟',a:'الثقب الأسود',h:'لا يفلت منه الضوء'},
+/* ════ ع ════ */
+{l:'ع',d:'سهل',q:'ما هو الكوكب الأقرب إلى الشمس؟',a:'عطارد',h:'الأول في المجموعة'},
+{l:'ع',d:'سهل',q:'ما هي عاصمة الأردن؟',a:'عمّان',h:'سبعة تلال'},
+{l:'ع',d:'متوسط',q:'ما الحيوان الذي يصطاد بالشبكة؟',a:'العنكبوت',h:'ثمانية أرجل'},
+{l:'ع',d:'سهل',q:'ما هي عاصمة عُمان؟',a:'مسقط',h:'على خليج عُمان'},
+{l:'ع',d:'صعب',q:'من هي أول عالمة نالت جائزة نوبل مرتين؟',a:'ماري كوري',h:'في الفيزياء والكيمياء'},
+{l:'ع',d:'سهل',q:'ما هو العضو الذي يُفرز الصفراء؟',a:'الكبد',h:'أكبر غدة في الجسم'},
+{l:'ع',d:'متوسط',q:'ما هو أشهر مسجد في العالم الإسلامي؟',a:'المسجد الحرام',h:'في مكة المكرمة'},
+{l:'ع',d:'صعب',q:'ما عدد سور القرآن الكريم؟',a:'114 سورة',h:'أولها الفاتحة'},
+/* ════ غ ════ */
+{l:'غ',d:'صعب',q:'ما اسم أكبر قمر لكوكب المشتري؟',a:'غانيميد',h:'أكبر من عطارد'},
+{l:'غ',d:'سهل',q:'ما هو أكبر جزيرة في العالم؟',a:'غرينلاند',h:'قرب القطب الشمالي'},
+{l:'غ',d:'متوسط',q:'ما الغاز الرئيسي للاحترار العالمي؟',a:'ثاني أكسيد الكربون',h:'من حرق الوقود'},
+{l:'غ',d:'سهل',q:'ما هو لون العلم الليبي حالياً؟',a:'أحمر وأسود وأخضر',h:'ثلاثة ألوان أفقية'},
+{l:'غ',d:'صعب',q:'ما اسم أشهر حصن تاريخي في الأندلس؟',a:'قصر الحمراء',h:'في غرناطة'},
+/* ════ ف ════ */
+{l:'ف',d:'سهل',q:'ما هو أسرع حيوان بري؟',a:'الفهد',h:'120 كم/ساعة'},
+{l:'ف',d:'سهل',q:'ما هو أصغر دولة في العالم؟',a:'الفاتيكان',h:'داخل روما'},
+{l:'ف',d:'سهل',q:'ما هي عاصمة النمسا؟',a:'فيينا',h:'مدينة الموسيقى الكلاسيكية'},
+{l:'ف',d:'متوسط',q:'ما هو العلم الذي يدرس القوى والحركة؟',a:'الفيزياء',h:'نيوتن وأينشتاين'},
+{l:'ف',d:'سهل',q:'ما هي عاصمة فنلندا؟',a:'هلسنكي',h:'شمال أوروبا'},
+{l:'ف',d:'صعب',q:'ما هو مجال فيزياء نظرية الكم؟',a:'السلوك الجسيمي على المستوى الذري',h:'اكتشفه بلانك وبور'},
+{l:'ف',d:'متوسط',q:'ما هي الدولة التي تُصنع فيها سيارة فيراري؟',a:'إيطاليا',h:'شعارها الحصان الرافع'},
+/* ════ ق ════ */
+{l:'ق',d:'سهل',q:'ما هي عاصمة مصر؟',a:'القاهرة',h:'مدينة الأهرامات'},
+{l:'ق',d:'سهل',q:'ما الجسم الذي يدور حول الكواكب؟',a:'القمر',h:'يضيء الليل'},
+{l:'ق',d:'سهل',q:'ما اسم قناة البحر الأحمر بالمتوسط؟',a:'قناة السويس',h:'في مصر'},
+{l:'ق',d:'صعب',q:'ما الحيوان الذي يبني السدود في الأنهار؟',a:'القندس',h:'أسنانه تقطع الأشجار'},
+{l:'ق',d:'متوسط',q:'ما هو القمر الصناعي الأول في التاريخ؟',a:'سبوتنيك 1',h:'أطلقه السوفييت 1957'},
+{l:'ق',d:'سهل',q:'ما عدد أعمدة المسجد النبوي الشريف الأصلية؟',a:'ستة',h:'في المدينة المنورة'},
+{l:'ق',d:'متوسط',q:'ما هي دولة القرن الأفريقي التي لا ساحل لها؟',a:'إثيوبيا',h:'بعد استقلال إريتريا'},
+/* ════ ك ════ */
+{l:'ك',d:'سهل',q:'ما هي عاصمة الكويت؟',a:'الكويت',h:'على الخليج العربي'},
+{l:'ك',d:'متوسط',q:'ما هو العلم الذي يدرس تركيب المادة؟',a:'الكيمياء',h:'المعمل والعناصر'},
+{l:'ك',d:'سهل',q:'ما الحيوان الذي يحمل صغاره في جراب؟',a:'الكنغر',h:'من أستراليا'},
+{l:'ك',d:'سهل',q:'ما هي عاصمة كندا؟',a:'أوتاوا',h:'ليست تورنتو'},
+{l:'ك',d:'صعب',q:'ما اسم أقدم نص أدبي مكتوب؟',a:'ملحمة جلجامش',h:'من العراق القديم'},
+{l:'ك',d:'سهل',q:'ما هو الكوكب الأخضر؟',a:'الأرض',h:'كوكبنا'},
+{l:'ك',d:'متوسط',q:'ما هو مسار الكرة الأرضية حول الشمس؟',a:'المدار الإهليجي',h:'ليس دائرياً تماماً'},
+/* ════ ل ════ */
+{l:'ل',d:'سهل',q:'ما هي عاصمة البرتغال؟',a:'لشبونة',h:'على الأطلسي'},
+{l:'ل',d:'متوسط',q:'من رسم الموناليزا؟',a:'ليوناردو دافنشي',h:'فنان إيطالي'},
+{l:'ل',d:'سهل',q:'ما هي عاصمة لبنان؟',a:'بيروت',h:'عاصمة الثقافة'},
+{l:'ل',d:'صعب',q:'ما اسم النظرية التي تقول إن الكون بدأ بانفجار؟',a:'الانفجار الكبير',h:'Big Bang'},
+{l:'ل',d:'سهل',q:'كم لغة رسمية في الأمم المتحدة؟',a:'ست لغات',h:'منها العربية'},
+{l:'ل',d:'متوسط',q:'ما اسم أول رواية عربية في التاريخ؟',a:'زينب لمحمد حسين هيكل',h:'1913م'},
+/* ════ م ════ */
+{l:'م',d:'سهل',q:'ما هو أكبر كوكب في المجموعة الشمسية؟',a:'المشتري',h:'الخامس من الشمس'},
+{l:'م',d:'سهل',q:'ما هو أكبر محيط؟',a:'المحيط الهادئ',h:'يحيط بالأمريكتين'},
+{l:'م',d:'سهل',q:'ما هو أصلب مادة في الطبيعة؟',a:'الماس',h:'يخدش كل شيء'},
+{l:'م',d:'سهل',q:'ما هي عاصمة روسيا؟',a:'موسكو',h:'أكبر مدن أوروبا'},
+{l:'م',d:'سهل',q:'ما هو الكوكب الأحمر؟',a:'المريخ',h:'الرابع من الشمس'},
+{l:'م',d:'متوسط',q:'ما اسم أشهر شاعر عربي كلاسيكي؟',a:'المتنبي',h:'شاعر عباسي عظيم'},
+{l:'م',d:'صعب',q:'ما اسم النظرية الفيزيائية التي وضعها أينشتاين؟',a:'النسبية',h:'E=mc²'},
+{l:'م',d:'سهل',q:'ما اسم أكبر دولة في أفريقيا؟',a:'الجزائر',h:'بعد انفصال السودان'},
+{l:'م',d:'متوسط',q:'ما هو أثقل عنصر في الجدول الدوري؟',a:'أوغانيسون',h:'رقمه الذري 118'},
+/* ════ ن ════ */
+{l:'ن',d:'سهل',q:'ما هو أطول نهر في العالم؟',a:'النيل',h:'يمر بمصر'},
+{l:'ن',d:'سهل',q:'ما هو الغاز الأكثر في الهواء؟',a:'النيتروجين',h:'78% من الهواء'},
+{l:'ن',d:'سهل',q:'من هو أول إنسان مشى على القمر؟',a:'نيل أرمسترونغ',h:'أمريكي 1969'},
+{l:'ن',d:'سهل',q:'ما هو الكوكب الأبعد عن الشمس؟',a:'نبتون',h:'الثامن من الشمس'},
+{l:'ن',d:'متوسط',q:'من هو الروائي العربي الحائز على نوبل؟',a:'نجيب محفوظ',h:'من مصر'},
+{l:'ن',d:'صعب',q:'ما اسم العالِم الذي وضع نظرية الانتخاب الطبيعي؟',a:'داروين',h:'أصل الأنواع 1859'},
+{l:'ن',d:'سهل',q:'ما أكبر دولة من حيث عدد السكان في آسيا؟',a:'الصين',h:'أكثر من مليار ونصف'},
+{l:'ن',d:'متوسط',q:'ما اسم الجزيرة العربية التي تتبع اليمن؟',a:'جزيرة سقطرى',h:'مشهورة بتنوعها البيولوجي'},
+/* ════ ه ════ */
+{l:'ه',d:'سهل',q:'ما هو أول عنصر في الجدول الدوري؟',a:'الهيدروجين',h:'أخف العناصر'},
+{l:'ه',d:'سهل',q:'ما الغاز الذي يملأ البالونات؟',a:'الهيليوم',h:'أخف من الهواء'},
+{l:'ه',d:'سهل',q:'ما هو اختراع غراهام بيل؟',a:'الهاتف',h:'غيّر الاتصالات'},
+{l:'ه',d:'سهل',q:'ما هي عاصمة هولندا؟',a:'أمستردام',h:'مدينة القنوات'},
+{l:'ه',d:'متوسط',q:'ما اسم الشبكة الاجتماعية التي أسسها مارك زوكربيرغ؟',a:'فيسبوك',h:'Meta الآن'},
+{l:'ه',d:'صعب',q:'ما هو الهورمون المسؤول عن النوم؟',a:'الميلاتونين',h:'تُنتجه الغدة الصنوبرية'},
+/* ════ و ════ */
+{l:'و',d:'سهل',q:'ما اسم الحيوان أبو قرن؟',a:'وحيد القرن',h:'له قرن كبير'},
+{l:'و',d:'سهل',q:'ما هي عاصمة بولندا؟',a:'وارسو',h:'على نهر فيستولا'},
+{l:'و',d:'صعب',q:'ما هي وحدة قياس الشغل في النظام الدولي؟',a:'الجول',h:'سُميت بعالم إنجليزي'},
+{l:'و',d:'متوسط',q:'من اخترع الراديو؟',a:'غولييلمو ماركوني',h:'إيطالي'},
+{l:'و',d:'سهل',q:'ما اللون الناتج عن مزج الأبيض والأسود؟',a:'الرمادي',h:'لون الغيوم'},
+{l:'و',d:'صعب',q:'ما هي وظيفة الصفائح الدموية؟',a:'تجلط الدم',h:'تمنع النزيف'},
+/* ════ ي ════ */
+{l:'ي',d:'سهل',q:'من هو أول رائد دار حول الأرض؟',a:'يوري غاغارين',h:'سوفيتي 1961'},
+{l:'ي',d:'متوسط',q:'ما اسم أقدم دولة طبّقت الديمقراطية؟',a:'اليونان',h:'أثينا القديمة'},
+{l:'ي',d:'سهل',q:'ما الحشرة التي تضيء في الليل؟',a:'اليراعة',h:'تطير وتضيء'},
+{l:'ي',d:'متوسط',q:'من اخترع علم الجبر؟',a:'الخوارزمي',h:'عالم مسلم عباسي'},
+{l:'ي',d:'صعب',q:'ما اسم اليابان بالعربية القديمة؟',a:'شيبانكو',h:'ذكرها ابن بطوطة'},
+{l:'ي',d:'سهل',q:'ما اليوم العالمي للمرأة؟',a:'8 مارس',h:'يحتفل به سنوياً'},
+/* ════ أسئلة إضافية متنوعة ════ */
+{l:'أ',d:'صعب',q:'ما هي أصغر عظمة في جسم الإنسان؟',a:'الركابة',h:'في الأذن الوسطى'},
+{l:'ب',d:'متوسط',q:'ما عدد بلدان الوطن العربي؟',a:'22 دولة',h:'من الخليج إلى المحيط'},
+{l:'ت',d:'سهل',q:'ما هو التفاعل الكيميائي الذي تحدثه خلايا الجسم لإنتاج الطاقة؟',a:'التنفس الخلوي',h:'يُنتج ATP'},
+{l:'ج',d:'صعب',q:'ما اسم القرن الذي شهد الحرب العالمية الثانية؟',a:'العشرون',h:'1939-1945م'},
+{l:'ح',d:'متوسط',q:'ما هو الجهاز المناعي الذي يُنتج الأجسام المضادة؟',a:'الجهاز اللمفاوي',h:'يشمل الطحال والغدد'},
+{l:'د',d:'سهل',q:'ما هو النهر الذي يمر بالعراق؟',a:'دجلة والفرات',h:'بلاد الرافدين'},
+{l:'ر',d:'متوسط',q:'ما الركيزة الوراثية في خلايا الجسم؟',a:'DNA',h:'حمض الديوكسي ريبونوكليك'},
+{l:'ز',d:'سهل',q:'ما هو الغذاء الأساسي للنحل؟',a:'زهور النباتات',h:'ينتج منها العسل'},
+{l:'س',d:'صعب',q:'ما اسم أول دستور كُتب في التاريخ؟',a:'شريعة حمورابي',h:'بابلي قديم'},
+{l:'ش',d:'متوسط',q:'ما هو الشرط الأساسي للحصول على جائزة نوبل؟',a:'إسهام استثنائي لصالح البشرية',h:'أنواع مختلفة'},
+{l:'ص',d:'سهل',q:'ما هي الدولة التي اخترعت الورق؟',a:'الصين',h:'قبل آلاف السنين'},
+{l:'ط',d:'صعب',q:'ما هو المكوّن الرئيسي للهواء الجوي؟',a:'النيتروجين',h:'نسبته 78%'},
+{l:'ع',d:'متوسط',q:'ما هو العملة الرسمية في اليابان؟',a:'الين',h:'¥ رمزه'},
+{l:'ف',d:'سهل',q:'ما هو الفيلسوف الذي قال الشك هو بداية المعرفة؟',a:'ديكارت',h:'أنا أفكر إذن أنا موجود'},
+{l:'ق',d:'متوسط',q:'ما اسم أول رواية علمية خيالية في العالم؟',a:'رحلة مركبة ماير في القمر',h:'يوهانس كيبلر 1634م'},
+{l:'ك',d:'سهل',q:'كم نسبة الملح في مياه المحيطات؟',a:'3.5%',h:'تقريباً'},
+{l:'ل',d:'صعب',q:'ما هو الليزر؟',a:'ضوء متماسك وأحادي اللون',h:'يُستخدم طبياً وصناعياً'},
+{l:'م',d:'سهل',q:'ما أشهر مدينة في المغرب تاريخياً؟',a:'مراكش',h:'حمراء المدينة'},
+{l:'ن',d:'متوسط',q:'ما عدد أيام شهر فبراير في السنة الكبيسة؟',a:'29 يوماً',h:'عادةً 28 يوماً'},
+{l:'ه',d:'سهل',q:'ما هو الحيوان الذي يُعدّ أذكى الحيوانات؟',a:'الشمبانزي',h:'97% مشابه لجينات الإنسان'},
+{l:'و',d:'متوسط',q:'ما اسم منظمة الصحة العالمية؟',a:'WHO',h:'تأسست 1948'},
+{l:'ي',d:'سهل',q:'ما هو اليورو؟',a:'عملة الاتحاد الأوروبي',h:'تأسس 1999'},
+{l:'ذ',d:'متوسط',q:'من اخترع الهاتف النقال؟',a:'مارتن كوبر',h:'شركة موتورولا 1973'},
+{l:'ز',d:'صعب',q:'ما هو الزلزال الأقوى المُسجَّل في التاريخ؟',a:'زلزال فالديفيا 1960',h:'في تشيلي، 9.5 ريختر'},
+{l:'ب',d:'صعب',q:'ما هو أول حاسوب شخصي تجاري؟',a:'Apple I',h:'ستيف جوبز وستيف وزنياك'},
+{l:'ح',d:'سهل',q:'ما اسم جبل الله في مكة المكرمة؟',a:'جبل حراء',h:'نزل فيه الوحي'},
+{l:'خ',d:'سهل',q:'ما هو الخليج الذي تطل عليه دول الخليج العربي؟',a:'الخليج العربي',h:'بين الجزيرة وإيران'},
+{l:'غ',d:'متوسط',q:'ما هو الغذاء الذي يحتوي على أعلى نسبة بروتين؟',a:'اللحوم والبيض',h:'مصادر حيوانية'},
+{l:'ظ',d:'سهل',q:'ما هو الظل؟',a:'غياب الضوء خلف جسم معتم',h:'يحدث في الشمس'},
+{l:'ض',d:'سهل',q:'ما هي الضفدعة الأكثر سمية في العالم؟',a:'ضفدعة السهم السامة',h:'في أمريكا الجنوبية'},
+{l:'ث',d:'صعب',q:'ما اسم الفيلسوف الذي وضع مبادئ الأخلاق الكانطية؟',a:'إيمانويل كانط',h:'ألماني القرن 18'},
+{l:'ص',d:'متوسط',q:'ما هي الصحراء الأكثر برودة في العالم؟',a:'أنتاركتيكا',h:'القارة القطبية الجنوبية'},
+{l:'ذ',d:'سهل',q:'ما هو الذهب الأسود؟',a:'النفط',h:'أساس الاقتصاد العالمي'},
+{l:'ط',d:'سهل',q:'ما هو الطعام القومي للسعوديين؟',a:'الكبسة',h:'أرز مع لحم'},
+{l:'ح',d:'صعب',q:'ما هو أكثر فيروس انتشاراً في التاريخ؟',a:'الإنفلونزا الإسبانية',h:'1918م - قتل الملايين'},
+{l:'س',d:'متوسط',q:'ما هي السرعة التي تنتقل بها الأصوات في الهواء؟',a:'343 متر في الثانية',h:'في درجة حرارة 20 مئوية'},
+{l:'ع',d:'سهل',q:'ما هو عدد الأسنان لدى الإنسان البالغ بما فيها ضرس العقل؟',a:'32 سنة',h:'قد لا تظهر الكلها'},
+{l:'ف',d:'متوسط',q:'ما هي الفلسفة التي تقول الغاية تبرر الوسيلة؟',a:'الميكيافيلية',h:'نسبة لنيقولا ميكيافيلي'},
+{l:'ق',d:'سهل',q:'ما هي أطول قصيدة شعرية في التاريخ العربي؟',a:'المعلقات',h:'سبع قصائد جاهلية'},
+{l:'ك',d:'متوسط',q:'ما هو الكلب الأذكى في العالم حسب الأبحاث؟',a:'البوردر كولي',h:'للحراسة والرعي'},
+{l:'ل',d:'سهل',q:'ما هي عاصمة ليبيا؟',a:'طرابلس',h:'على البحر الأبيض المتوسط'},
+{l:'م',d:'متوسط',q:'ما هو المركب الكيميائي الذي يُشكّل الأسمدة الطبيعية؟',a:'النترات',h:'من إفرازات بكتيريا التربة'},
+{l:'ن',d:'سهل',q:'ما هي أكبر نقطة جغرافية جنوباً في الكرة الأرضية؟',a:'القطب الجنوبي',h:'في أنتاركتيكا'},
+{l:'ه',d:'متوسط',q:'ما اسم الشركة التي طوّرت نظام أندرويد؟',a:'جوجل',h:'تملكها ألفابيت'},
+{l:'و',d:'سهل',q:'ما هي الوحدة المستخدمة لقياس الكهرباء؟',a:'الأمبير',h:'سُمّي بعالم فرنسي'},
+{l:'ي',d:'متوسط',q:'ما هي اليابسة الأكثر ارتفاعاً في العالم؟',a:'أنتاركتيكا',h:'متوسط ارتفاعها 2300 متر'},
+/* ════ أسئلة إضافية لتغطية الحروف الناقصة ════ */
+/* ح */
+{l:'ح',d:'سهل',q:'ما الحيوان الذي يعيش في الصحراء ويُسمى سفينتها؟',a:'حيوان الجمل',h:'يختزن الماء في سنامه'},
+{l:'ح',d:'سهل',q:'ما أكبر قارة في العالم؟',a:'آسيا',h:''},
+{l:'ح',d:'سهل',q:'في أي مدينة تقع الكعبة المشرفة؟',a:'مكة المكرمة',h:''},
+{l:'ح',d:'متوسط',q:'ما اسم أكبر حيوان بري في العالم؟',a:'حيوان الفيل الأفريقي',h:'وزنه يصل لـ 6 أطنان'},
+{l:'ح',d:'سهل',q:'ما الحيوان المعروف بقرونه الكبيرة في أفريقيا؟',a:'حيوان الغزال لا — وحيد القرن',h:''},
+{l:'ح',d:'سهل',q:'ما هي حاسة الشم عند الكلب مقارنة بالإنسان؟',a:'حاسة شم الكلب أقوى بـ 100 ألف مرة',h:'أقوى بكثير'},
+/* ذ */
+{l:'ذ',d:'سهل',q:'ما المعدن الأصفر اللامع الثمين؟',a:'ذهب',h:'رمزه Au'},
+{l:'ذ',d:'سهل',q:'ما الحيوان المفترس الذي يُعوي ويصيد في مجموعات؟',a:'ذئب',h:'من الكلبيات البرية'},
+{l:'ذ',d:'متوسط',q:'ما اسم ذرة المادة التي لا تقبل القسمة؟',a:'ذرة',h:'أصغر وحدة للمادة'},
+{l:'ذ',d:'سهل',q:'ما الشيء الذي يمتصه النبات من التربة؟',a:'ذرات المعادن والمياه',h:'عبر الجذور'},
+/* ظ */
+{l:'ظ',d:'سهل',q:'ما الحيوان الذي يُصدر رائحة كريهة دفاعاً عن نفسه؟',a:'ظربان',h:'أو الظرباء'},
+{l:'ظ',d:'سهل',q:'ما اسم ظاهرة طبيعية تحدث حين يحجب القمر الشمس؟',a:'ظاهرة الكسوف',h:'كسوف الشمس'},
+{l:'ظ',d:'متوسط',q:'ما اسم ظاهرة المد والجزر التي تحركها جاذبية القمر؟',a:'ظاهرة المد والجزر',h:'تؤثر على البحار'},
+{l:'ظ',d:'سهل',q:'ما الشيء الذي تراه في الشمس خلف جسم معتم؟',a:'ظل',h:'يتكون بغياب الضوء'},
+/* و */
+{l:'و',d:'سهل',q:'ما الحيوان الذي له قرن واحد ضخم في مقدمة رأسه؟',a:'وحيد القرن',h:'من أضخم الثدييات'},
+{l:'و',d:'سهل',q:'ما هي عاصمة بولندا؟',a:'وارسو',h:'على نهر فيستولا'},
+{l:'و',d:'متوسط',q:'ما وحدة قياس الشغل في النظام الدولي؟',a:'وحدة الجول',h:'سُمّيت بعالم إنجليزي'},
+{l:'و',d:'سهل',q:'ما وظيفة الصفائح الدموية في الجسم؟',a:'وقف النزيف وتجلط الدم',h:'تمنع النزيف'},
+];
+
+/* ════════════════════════════════════════════════════════
+   حالة اللعبة
+   ════════════════════════════════════════════════════════ */
+const LTRS = ['أ','ب','ت','ث','ج','ح','خ','د','ذ','ر','ز','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ك','ل','م','ن','ه','و','ي'];
+let R = 5, C = 5; // حجم الشبكة (يتغير حسب الإعدادات)
+let G = {
+  cells:[],
+  names:{r:'الفريق 1', b:'الفريق 2'},
+  scores:{r:0, b:0},
+  roundsWon:{r:0, b:0},
+  winRounds:1,
+  active:null,
+  curQ:null,
+  usedQ:new Set(),
+  locked:false,
+  lockTimer:null,
+  over:false,
+  _lm:'sh'
+};
+const gc = (r,c) => G.cells.find(x => x.r===r && x.c===c);
+
+/* تهيئة اللعبة */
+function initGame() {
+  if(G.lockTimer) clearInterval(G.lockTimer);
+  R = CFG.size; C = CFG.size;
+  const needed = R * C;
+  let pool = [...LTRS];
+  // تعبئة الحروف بالتكرار إذا لزم
+  while(pool.length < needed) pool = [...pool, ...LTRS];
+  const ls = pool.sort(() => Math.random() - .5).slice(0, needed);
+  G.cells = [];
+  G.scores = {r:0,b:0};
+  G.active = null; G.curQ = null;
+  G.usedQ = new Set(); G.locked = false; G.over = false;
+  let i = 0;
+  for(let r=0;r<R;r++) for(let c=0;c<C;c++) G.cells.push({r,c,letter:ls[i++],owner:null});
+  // تحقق سريع في الـ console
+  console.log(`[جوابك] شبكة ${R}×${C} — جيران (0,0):`, getNeighbors(0,0), '— جيران (1,0):', getNeighbors(1,0));
+}
+
+/* ════════════════════════════════════════════════════════
+   بناء الشبكة السداسية — Flat-Top Hexagons
+   المعادلات:
+     W = عرض الخلية
+     H = W × 0.866 (ارتفاع مثلث المسافة)
+     تداخل عمودي = H × 0.25
+     الصفوف الفردية تتحرك يميناً W/2
+   ════════════════════════════════════════════════════════ */
+function makeSVG(W, H) {
+  const p = `${W*.25},0 ${W*.75},0 ${W},${H*.5} ${W*.75},${H} ${W*.25},${H} 0,${H*.5}`;
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  s.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;overflow:visible';
+  const poly = document.createElementNS('http://www.w3.org/2000/svg','polygon');
+  poly.setAttribute('points', p);
+  s.appendChild(poly);
+  return s;
+}
+
+function mkHex(type, W, H, opts={}) {
+  const el = document.createElement('div');
+  el.className = 'hx';
+  el.style.cssText = `width:${W}px;height:${H}px;position:relative;flex-shrink:0;opacity:0;animation:hexIn .3s ease forwards`;
+  el.appendChild(makeSVG(W, H));
+  const lbl = document.createElement('div');
+  lbl.className = 'hxlbl';
+  lbl.style.fontSize = Math.round(W * .28) + 'px';
+  el.appendChild(lbl);
+
+  if(type === 'b1') { // حدود الفريق 1 (أعلى/أسفل)
+    el.classList.add('brd-1','nb');
+    lbl.style.fontSize = Math.round(W*.18)+'px';
+  } else if(type === 'b2') { // حدود الفريق 2 (يمين/يسار)
+    el.classList.add('brd-2','nb');
+    lbl.style.fontSize = Math.round(W*.18)+'px';
+  } else {
+    const cd = opts.cd;
+    el.dataset.r = cd.r; el.dataset.c = cd.c;
+    lbl.textContent = cd.letter;
+    const isAct = G.active && G.active.r===cd.r && G.active.c===cd.c;
+    if(isAct) el.classList.add('act');
+    else if(cd.owner==='r') el.classList.add('hr','owned');
+    else if(cd.owner==='b') el.classList.add('hb','owned');
+    else el.classList.add('hw');
+    if(opts.onClick && !cd.owner && !G.over) {
+      el.addEventListener('click', opts.onClick);
+    }
+  }
+  return el;
+}
+
+/* حساب حجم الخلايا — يعتمد على أبعاد الشاشة الحقيقية */
+function calcHexSize(containerId) {
+  const PANEL_W = window.innerWidth <= 600 ? 0 : window.innerWidth <= 768 ? 260 : 308;
+  const HEADER_H = 50;
+  const FOOTER_H = 24;
+  const ARROW_H  = 90;   // هامش أعلى/أسفل لأسهم الاتجاه
+  const ARROW_W  = 130;  // هامش يمين/يسار
+
+  const availW = window.innerWidth  - PANEL_W - ARROW_W;
+  const availH = window.innerHeight - HEADER_H - FOOTER_H - ARROW_H;
+
+  const W_fromW = availW / (C + 2.5);
+  const W_fromH = availH / (0.866 * (0.75 * (R + 2) + 0.25));
+
+  let W = Math.floor(Math.min(W_fromW, W_fromH));
+  // سقف 130px مريح للعين على أي شاشة
+  W = Math.max(44, Math.min(W, 130));
+  return { W, H: Math.round(W * 0.866) };
+}
+
+function buildGrid(id, W, H, clickFn, animate=false) {
+  const wrap = document.getElementById(id);
+  if(!wrap) return;
+  wrap.innerHTML = '';
+  const overY = Math.round(H * .25);
+  const shiftX = Math.round(W * .5);
+  let hexIdx = 0; // عداد لحساب التأخير المتتالي
+
+  const newRow = (odd) => {
+    const row = document.createElement('div');
+    row.className = 'hxrow' + (odd ? ' odd' : '');
+    row.style.marginBottom = '-' + overY + 'px';
+    if(odd) row.style.marginRight = '-' + shiftX + 'px';
+    return row;
+  };
+
+  const addHex = (row, type, ww, hh, optsH={}) => {
+    const h = mkHex(type, ww, hh, optsH);
+    if(animate) {
+      const delay = Math.min(hexIdx * 18, 400);
+      h.style.animationDelay = delay + 'ms';
+    } else {
+      h.style.animation = 'none';
+      h.style.opacity = '1';
+    }
+    hexIdx++;
+    row.appendChild(h);
+  };
+
+  // صف الحدود العلوي (الفريق 1)
+  const trow = newRow(false);
+  for(let c=0; c<C+2; c++) addHex(trow,'b1',W,H);
+  wrap.appendChild(trow);
+
+  // صفوف اللعب
+  for(let r=0; r<R; r++) {
+    const row = newRow(r%2===1);
+    addHex(row,'b2',W,H);
+    for(let c=0; c<C; c++) {
+      const cd = gc(r,c);
+      addHex(row,'play',W,H,{cd, onClick:clickFn ? ()=>clickFn(r,c) : null});
+    }
+    addHex(row,'b2',W,H);
+    wrap.appendChild(row);
+  }
+
+  // صف الحدود السفلي (الفريق 1)
+  const brow = newRow(R%2===1);
+  if(R%2===1) brow.style.marginRight = '-' + shiftX + 'px';
+  for(let c=0; c<C+2; c++) addHex(brow,'b1',W,H);
+  wrap.appendChild(brow);
+}
+
+/* تمييز خلايا مسار الفوز */
+function markWinCells(path) {
+  path.forEach(([r,c]) => {
+    document.querySelectorAll(`.hx[data-r="${r}"][data-c="${c}"]`).forEach(el => {
+      el.classList.add('win-cell');
+    });
+  });
+}
+
+/* مزامنة جميع الشبكات */
+function syncAll() {
+  const sz = calcHexSize('hgrid');
+  buildGrid('hgrid', sz.W, sz.H, activateCell);
+  const szd = calcHexSize('dgrid');
+  buildGrid('dgrid', szd.W, szd.H, null);
+  if(document.getElementById('ss').classList.contains('on')) {
+    const szs = calcHexSize('sgrid');
+    buildGrid('sgrid', szs.W, szs.H, spActivate);
+  }
+  if(document.getElementById('song').classList.contains('on')) {
+    const szo = calcHexSize('ogrid');
+    buildGrid('ogrid', szo.W, szo.H, OL.isHost ? ogSelectCell : null);
+  }
+  // تحديث النقاط
+  document.getElementById('hsr').textContent = G.scores.r;
+  document.getElementById('hsb').textContent = G.scores.b;
+  document.getElementById('dsr').textContent = G.scores.r;
+  document.getElementById('dsb').textContent = G.scores.b;
+  spSyncScores();
+  // مؤشر الحرف النشط
+  const dal = document.getElementById('dal');
+  const dalc = document.getElementById('dalc');
+  if(G.active) { const cd=gc(G.active.r,G.active.c); dalc.textContent=cd?cd.letter:'—'; dal.classList.add('on'); }
+  else dal.classList.remove('on');
+}
+
+/* ════════════════════════════════════════════════════════
+   خوارزمية BFS للتحقق من الفوز (محسّنة وبدون أخطاء)
+   الفريق 1 (r): يوصّل الصف الأول بالأخير (أعلى → أسفل)
+   الفريق 2 (b): يوصّل العمود الأخير بالأول (يمين → يسار)
+   ════════════════════════════════════════════════════════ */
+function getNeighbors(r, c) {
+  /*
+   * الشرح الكامل:
+   * - buildGrid يضع marginRight: -W/2 على الصفوف الفردية (odd rows)
+   * - في RTL، marginRight يدفع من اليمين → الصفوف الفردية تنزلق يساراً بصرياً
+   * - يعني خلية (odd_row, c) تقع بين (even_row, c-1) و (even_row, c) بصرياً
+   *
+   * جيران خلية (r,c):
+   *   الصفوف الفردية (odd) — منزلحة يساراً:
+   *     أعلى-يمين = (r-1, c-1)   أعلى-يسار = (r-1, c)
+   *     يمين      = (r,   c+1)   يسار      = (r,   c-1)
+   *     أسفل-يمين = (r+1, c-1)   أسفل-يسار = (r+1, c)
+   *
+   *   الصفوف الزوجية (even) — في مكانها الأصلي:
+   *     أعلى-يمين = (r-1, c)     أعلى-يسار = (r-1, c+1)
+   *     يمين      = (r,   c+1)   يسار      = (r,   c-1)
+   *     أسفل-يمين = (r+1, c)     أسفل-يسار = (r+1, c+1)
+   *
+   * ملاحظة: هذا الترتيب صحيح لأن الصفوف الفردية منزلحة يساراً (نحو c أكبر في RTL)
+   */
+  const odd = r % 2 === 1;
+  const candidates = odd ? [
+    [r-1, c-1], // أعلى-يمين
+    [r-1, c],   // أعلى-يسار
+    [r,   c-1], // يمين
+    [r,   c+1], // يسار
+    [r+1, c-1], // أسفل-يمين
+    [r+1, c],   // أسفل-يسار
+  ] : [
+    [r-1, c],   // أعلى-يمين
+    [r-1, c+1], // أعلى-يسار
+    [r,   c-1], // يمين
+    [r,   c+1], // يسار
+    [r+1, c],   // أسفل-يمين
+    [r+1, c+1], // أسفل-يسار
+  ];
+  return candidates.filter(([nr,nc]) => nr>=0 && nr<R && nc>=0 && nc<C);
+}
+
+function bfs(team) {
+  const vis = new Set();
+  const prev = new Map();
+  const queue = [];
+
+  if(team === 'r') {
+    // ابدأ من الصف الأول (row=0)
+    for(let c=0; c<C; c++) {
+      const cd = gc(0,c);
+      if(cd && cd.owner==='r') {
+        const key = `0,${c}`;
+        vis.add(key); prev.set(key,null); queue.push([0,c]);
+      }
+    }
+  } else {
+    // ابدأ من العمود الأيمن (col=C-1)
+    for(let r=0; r<R; r++) {
+      const cd = gc(r,C-1);
+      if(cd && cd.owner==='b') {
+        const key = `${r},${C-1}`;
+        vis.add(key); prev.set(key,null); queue.push([r,C-1]);
+      }
+    }
+  }
+
+  let head = 0;
+  while(head < queue.length) {
+    const [r,c] = queue[head++];
+    // تحقق من الوصول
+    if(team==='r' && r===R-1) return tracePath(prev, [r,c]);
+    if(team==='b' && c===0)   return tracePath(prev, [r,c]);
+    for(const [nr,nc] of getNeighbors(r,c)) {
+      const key = `${nr},${nc}`;
+      const cd = gc(nr,nc);
+      if(!vis.has(key) && cd && cd.owner===team) {
+        vis.add(key); prev.set(key,[r,c]); queue.push([nr,nc]);
+      }
+    }
+  }
+  return null;
+}
+
+function tracePath(prev, [er,ec]) {
+  const path = [];
+  let cur = `${er},${ec}`;
+  while(cur !== null && cur !== undefined) {
+    const [r,c] = cur.split(',').map(Number);
+    path.push([r,c]);
+    const p = prev.get(cur);
+    cur = p ? `${p[0]},${p[1]}` : null;
+  }
+  return path;
+}
+
+function checkWin() {
+  if(!CFG.autoWin) return;
+  const pr = bfs('r'), pb = bfs('b');
+  if(pr) { doWin('r', pr); return; }
+  if(pb) { doWin('b', pb); }
+}
+
+function doWin(team, path) {
+  G.over = true;
+  syncAll();
+  markWinCells(path);
+  playWinSound();
+  setTimeout(() => {
+    const n = G.names[team];
+    const dir = team==='r' ? 'وصّل الحافة العليا بالسفلى 🔴' : 'وصّل الحافة اليمنى باليسرى 🔵';
+    document.getElementById('wnam').textContent = n;
+    document.getElementById('wnam').className = 'win-name win-' + (team==='r'?'1':'2');
+    document.getElementById('wdsc').textContent = `${n} ${dir}`;
+    const rings = document.getElementById('win-rings');
+    rings.innerHTML = '';
+    for(let i=0;i<4;i++) {
+      const ring = document.createElement('div');
+      ring.className = 'ring';
+      ring.style.cssText = `border:3px solid ${team==='r'?'var(--t1)':'var(--t2)'};animation-delay:${i*.7}s`;
+      rings.appendChild(ring);
+    }
+    show('swin');
+    confetti(team);
+  }, 1800);
+}
+
+/* ════════════════════════════════════════════════════════
+   تفعيل الخلايا والأسئلة
+   ════════════════════════════════════════════════════════ */
+function activateCell(r,c) {
+  if(G.over || G.locked) { if(G.locked) toast('⏳ انتظر انتهاء الحجب','terr'); return; }
+  const cd = gc(r,c);
+  if(cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
+  G.active = {r,c};
+  document.getElementById('hpl').textContent = cd.letter;
+  loadQ(cd.letter); syncAll();
+  setStat('الخلية "'+cd.letter+'" — صف '+(r+1)+' عمود '+(c+1));
+  // انيميشن تفعيل
+  const body = document.getElementById('sh');
+  body.classList.add('flash-correct');
+  setTimeout(()=>body.classList.remove('flash-correct'),600);
+}
+
+/* استخراج الحرف الجذر من الإجابة (بعد تجريد ال التعريف) */
+function rootLetter(str) {
+  if(!str) return '';
+  let s = str.trim();
+  if(s.startsWith('ال')) s = s.slice(2);
+  return s[0] ? s[0].replace(/[إأآا]/g,'أ') : '';
+}
+
+/* تطبيع الحرف للمقارنة */
+function normLetter(c) {
+  return (c||'').replace(/[إأآا]/g,'أ');
+}
+
+function loadQ(letter) {
+  const lNorm = normLetter(letter);
+
+  // 1) أسئلة بنفس الحرف (يبدأ الجواب بهذا الحرف) — غير مستخدمة
+  let pool = QDB.filter(q =>
+    normLetter(rootLetter(q.a)) === lNorm && !G.usedQ.has(q.q)
+  );
+
+  // 2) نفس الحرف ولكن مستخدمة — أعد استخدامها (امسح هذا الحرف فقط)
+  if(!pool.length) {
+    QDB.filter(q => normLetter(rootLetter(q.a)) === lNorm)
+       .forEach(q => G.usedQ.delete(q.q));
+    pool = QDB.filter(q => normLetter(rootLetter(q.a)) === lNorm);
+  }
+
+  // 3) لا يوجد سؤال لهذا الحرف إطلاقاً — اختر من الباقي
+  if(!pool.length) {
+    pool = QDB.filter(q => !G.usedQ.has(q.q));
+    if(!pool.length) { G.usedQ.clear(); pool = [...QDB]; }
+  }
+
+  G.curQ = pool[Math.floor(Math.random() * pool.length)];
+  showQ(G.curQ);
+}
+
+function showQ(q) {
+  document.getElementById('hpno').style.display = 'none';
+  document.getElementById('hpqc').style.display = 'block';
+  const stars = q.d==='سهل'?'⭐':q.d==='متوسط'?'⭐⭐':'⭐⭐⭐';
+  document.getElementById('hpd').textContent = stars + ' ' + q.d;
+  document.getElementById('hpq').textContent = q.q;
+  document.getElementById('hpa').textContent = q.a;
+  resetHintPanel();
+  enableJ();
+}
+
+function changeQ() {
+  if(!G.active) return;
+  if(G.curQ) G.usedQ.add(G.curQ.q);
+  const cd = gc(G.active.r, G.active.c);
+  loadQ(cd.letter);
+}
+
+/* ════════════════════════════════════════════════════════
+   نظام المساعدة الذكي — 3 مراحل
+   ════════════════════════════════════════════════════════ */
+function buildHintText(level) {
+  if(!G.curQ) return '';
+  const ans = G.curQ.a;
+
+  if(level === 1) {
+    // المرحلة 1: الحرف الأول فقط
+    const first = ans[0];
+    return `الجواب يبدأ بحرف: ${first}`;
+  }
+
+  if(level === 2) {
+    // المرحلة 2: كشف بعض الحروف (تبادل مخفي/ظاهر)
+    // أظهر كل حرف ثالث + المسافات + حروف قصيرة
+    let result = '';
+    let charIdx = 0;
+    for(let i = 0; i < ans.length; i++) {
+      const ch = ans[i];
+      if(ch === ' ') { result += ' '; continue; }
+      charIdx++;
+      // أظهر: الحرف الأول، كل حرف ثالث، والحرف الأخير
+      const isLast = (i === ans.length-1) || (ans.slice(i+1).replace(/ /g,'').length === 0);
+      if(charIdx === 1 || charIdx % 3 === 0 || isLast) {
+        result += ch;
+      } else {
+        result += '_ ';
+      }
+    }
+    return result.trim();
+  }
+
+  if(level === 3) {
+    // المرحلة 3: التلميح المباشر من قاعدة البيانات
+    return G.curQ.h || `الجواب مكوّن من ${ans.replace(/ /g,'').length} حروف`;
+  }
+
+  return '';
+}
+
+/* تتبع المساعدات المستخدمة */
+const G_hints = { used: new Set(), penalty: 0 };
+
+function openHintPanel() {
+  if(!G.curQ) return;
+  G_hints.used.clear();
+  // إخفاء الزر وإظهار اللوحة
+  document.getElementById('bh').style.display = 'none';
+  const sys = document.getElementById('hint-sys');
+  sys.classList.add('on');
+  // إعادة تفعيل كل الأزرار
+  [1,2,3].forEach(n => {
+    const btn = document.getElementById('hl'+n);
+    btn.classList.remove('used');
+    btn.disabled = false;
+  });
+  document.getElementById('hint-reveal').classList.remove('on');
+  document.getElementById('hint-reveal').textContent = '';
+}
+
+function giveHint(level) {
+  if(!G.curQ) return;
+  if(G_hints.used.has(level)) return;
+  G_hints.used.add(level);
+
+  const btn = document.getElementById('hl'+level);
+  btn.classList.add('used');
+  btn.disabled = true;
+
+  const text = buildHintText(level);
+  const reveal = document.getElementById('hint-reveal');
+  reveal.textContent = text;
+  reveal.classList.remove('on');
+  void reveal.offsetWidth; // إعادة تشغيل الأنيميشن
+  reveal.classList.add('on');
+
+  // العقوبات الزمنية
+  if(level === 2) {
+    G_hints.penalty += 5;
+    toast('⏱️ خصم 5 ثوانٍ من وقت الحجب عند الخطأ','terr');
+  }
+  if(level === 3) {
+    G_hints.penalty += 10;
+    toast('⏱️ خصم 10 ثوانٍ من وقت الحجب عند الخطأ','terr');
+  }
+}
+
+function resetHintPanel() {
+  G_hints.used.clear();
+  G_hints.penalty = 0;
+  document.getElementById('bh').style.display = 'flex';
+  document.getElementById('hint-sys')?.classList.remove('on');
+  document.getElementById('hint-reveal')?.classList.remove('on');
+}
+
+// دوال قديمة احتياطية (للتوافق)
+function reqHint() { openHintPanel(); }
+function grantHint() {}
+function cancelHint() { resetHintPanel(); }
+
+/* ════════════════════════════════════════════════════════
+   الحكم (Host Mode)
+   ════════════════════════════════════════════════════════ */
+function judge(team) {
+  if(!G.active || !G.curQ || G.over) return;
+  const {r,c} = G.active, cd = gc(r,c);
+  cd.owner = team; G.scores[team]++; G.usedQ.add(G.curQ.q);
+  G.active = null; G.curQ = null;
+  resetPanel(); playCorrectSound();
+  toast('✅ '+G.names[team]+' يحصل على "'+cd.letter+'"!','tok');
+  syncAll();
+  // انيميشن خلية مكتسبة حديثاً
+  document.querySelectorAll(`.hx[data-r="${r}"][data-c="${c}"]`).forEach(el=>{
+    el.classList.add('just-claimed');
+    setTimeout(()=>el.classList.remove('just-claimed'), 500);
+  });
+  checkWin(); setStat('اختر خلية جديدة للاستمرار');
+}
+
+function judgeWrong() {
+  if(!G.active || G.over) return;
+  if(G.curQ) G.usedQ.add(G.curQ.q);
+  G.locked = true; disableJ();
+  document.getElementById('lkbx').classList.add('on');
+  toast('❌ إجابة خاطئة! حجب 10 ثوانٍ','terr');
+  let n = 10; document.getElementById('lkn').textContent = n;
+  G.lockTimer = setInterval(() => {
+    n--; document.getElementById('lkn').textContent = n;
+    if(n<=0) { clearInterval(G.lockTimer); G.locked=false; document.getElementById('lkbx').classList.remove('on'); enableJ(); toast('⏰ انتهى الحجب!'); }
+  },1000);
+}
+
+function resetPanel() {
+  resetHintPanel();
+  document.getElementById('hpl').textContent = '—';
+  document.getElementById('hpqc').style.display = 'none';
+  document.getElementById('hpno').style.display = 'block';
+  document.getElementById('hintbx').classList.remove('on');
+  document.getElementById('hcfm').classList.remove('on');
+  disableJ();
+}
+function disableJ() { ['jbr','jbb','jbw'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; }); }
+function enableJ() { if(!G.active) return; ['jbr','jbb','jbw'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; }); }
+
+/* ════════════════════════════════════════════════════════
+   وضع اللعب الثنائي (Self Play)
+   ════════════════════════════════════════════════════════ */
+function spReset() {
+  ['sp-bno','sp-rno'].forEach(id=>document.getElementById(id).style.display='block');
+  ['sp-bqc','sp-rqc'].forEach(id=>document.getElementById(id).style.display='none');
+  ['sp-bans','sp-rans'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  ['sp-bhint','sp-rhint'].forEach(id=>{ const el=document.getElementById(id); if(el){el.classList.remove('on');el.innerHTML='';} });
+  spHintLevel = 0;
+  ['sp-blk','sp-rlk'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  spDisable();
+}
+function spDisable() { ['sp-bcor','sp-brev','sp-bhb','sp-bwrg','sp-bchg','sp-rcor','sp-rrev','sp-rhb','sp-rwrg','sp-rchg'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; }); }
+function spEnable() { ['sp-bcor','sp-brev','sp-bhb','sp-bwrg','sp-bchg','sp-rcor','sp-rrev','sp-rhb','sp-rwrg','sp-rchg'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=false; }); }
+
+function spActivate(r,c) {
+  if(G.over || G.locked) { if(G.locked) toast('⏳ انتظر انتهاء الحجب','terr'); return; }
+  const cd = gc(r,c);
+  if(cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
+  G.active = {r,c};
+  loadQ(cd.letter);
+  ['r','b'].forEach(t => {
+    const noEl = document.getElementById('sp-'+t+'no');
+    const qcEl = document.getElementById('sp-'+t+'qc');
+    const qEl  = document.getElementById('sp-'+t+'q');
+    if(noEl) noEl.style.display='none';
+    if(qcEl) qcEl.style.display='block';
+    if(qEl)  qEl.textContent = G.curQ ? G.curQ.q : '';
+    document.getElementById('sp-'+t+'ans')?.classList.remove('on');
+    document.getElementById('sp-'+t+'hint')?.classList.remove('on');
+  });
+  spEnable();
+  const szs = calcHexSize('sgrid');
+  buildGrid('sgrid', szs.W, szs.H, spActivate);
+  toast('📍 الخلية "'+cd.letter+'" — أجيبوا ثم حددوا الفائز');
+}
+
+function spJudge(team) {
+  if(!G.active || !G.curQ || G.over) return;
+  const {r,c} = G.active, cd = gc(r,c);
+  cd.owner = team; G.scores[team]++; G.usedQ.add(G.curQ.q);
+  G.active = null; G.curQ = null;
+  spReset();
+  const szs = calcHexSize('sgrid');
+  buildGrid('sgrid', szs.W, szs.H, spActivate);
+  spSyncScores(); playCorrectSound();
+  toast('✅ '+G.names[team]+' يحصل على "'+cd.letter+'"!','tok');
+  checkWin();
+}
+
+function spReveal() {
+  if(!G.curQ) return;
+  ['r','b'].forEach(t => {
+    document.getElementById('sp-'+t+'ans')?.classList.add('on');
+    const avEl = document.getElementById('sp-'+t+'av');
+    if(avEl) avEl.textContent = G.curQ.a;
+  });
+  ['sp-brev','sp-rrev'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; });
+}
+
+/* مستوى المساعدة الحالي في وضع اللعب الذاتي */
+let spHintLevel = 0;
+
+function spHint() {
+  if(!G.curQ) return;
+  spHintLevel++;
+  if(spHintLevel > 3) spHintLevel = 3;
+
+  const text = buildHintText(spHintLevel);
+
+  ['r','b'].forEach(t => {
+    const el = document.getElementById('sp-'+t+'hint');
+    if(!el) return;
+    let label = '';
+    if(spHintLevel === 1) label = '🔤 الحرف الأول';
+    if(spHintLevel === 2) label = '✂️ حروف ناقصة';
+    if(spHintLevel === 3) label = '💬 تلميح مباشر';
+  // تحديث نص الزر
+  const nextLevel = spHintLevel + 1;
+  const btnLabels = ['','💡 مساعدة (مجانية)','✂️ حروف ناقصة (-5ث)','💬 تلميح مباشر (-10ث)'];
+  ['sp-bhb','sp-rhb'].forEach(id=>{
+    const btn = document.getElementById(id);
+    if(btn && nextLevel <= 3) btn.textContent = btnLabels[nextLevel];
+  });
+    el.innerHTML = `<strong>${label}:</strong> ${text}`;
+    el.classList.add('on');
+  });
+
+  // خصم وقت عند الخطأ (يضاف للـ penalty)
+  if(spHintLevel === 2) toast('⏱️ مساعدة إضافية — خصم 5 ث عند الخطأ','terr');
+  if(spHintLevel === 3) {
+    toast('⏱️ تلميح كامل — خصم 10 ث عند الخطأ','terr');
+    ['sp-bhb','sp-rhb'].forEach(id=>{ const el=document.getElementById(id); if(el) el.disabled=true; });
+  }
+}
+
+function spWrong(team) {
+  if(!G.active || G.over) return;
+  if(G.curQ) G.usedQ.add(G.curQ.q);
+  G.locked = true; spDisable();
+  const lkId = 'sp-'+team+'lk', lnId = 'sp-'+team+'ln';
+  document.getElementById(lkId)?.classList.add('on');
+  toast('❌ خطأ! حجب 10 ثوانٍ','terr');
+  let n=10; document.getElementById(lnId).textContent=n;
+  G.lockTimer = setInterval(()=>{
+    n--; document.getElementById(lnId).textContent=n;
+    if(n<=0){clearInterval(G.lockTimer);G.locked=false;document.getElementById(lkId)?.classList.remove('on');spEnable();toast('⏰ انتهى الحجب!');}
+  },1000);
+}
+
+function spChangeQ() {
+  if(!G.active) return;
+  if(G.curQ) G.usedQ.add(G.curQ.q);
+  loadQ(gc(G.active.r,G.active.c).letter);
+  ['r','b'].forEach(t=>{
+    const qEl = document.getElementById('sp-'+t+'q');
+    if(qEl) qEl.textContent = G.curQ ? G.curQ.q : '';
+    document.getElementById('sp-'+t+'ans')?.classList.remove('on');
+    document.getElementById('sp-'+t+'hint')?.classList.remove('on');
+  });
+  ['sp-brev','sp-rrev','sp-bhb','sp-rhb'].forEach(id=>{const el=document.getElementById(id);if(el)el.disabled=false;});
+}
+
+function spSyncScores() {
+  const ids = [['sp-sr','ssr','hsr'],['sp-sb','ssb','hsb']];
+  [['r',ids[0]],['b',ids[1]]].forEach(([team,list])=>{
+    list[0].forEach ? list.forEach(id=>{ const el=document.getElementById(id); if(el) el.textContent=G.scores[team]; }) : null;
+  });
+  const spsr = document.getElementById('sp-sr'); if(spsr) spsr.textContent=G.scores.r;
+  const spsb = document.getElementById('sp-sb'); if(spsb) spsb.textContent=G.scores.b;
+  const ssr = document.getElementById('ssr'); if(ssr) ssr.textContent=G.scores.r;
+  const ssb = document.getElementById('ssb'); if(ssb) ssb.textContent=G.scores.b;
+}
+
+/* ════════════════════════════════════════════════════════
+   Online (Firebase)
+   ════════════════════════════════════════════════════════ */
+let OL = {team:null, code:null, pid:null, isHost:false};
+
+function olTab(t) {
+  ['c','j'].forEach(id=>{
+    document.getElementById('tab-'+id).classList.toggle('active',id===t);
+    document.getElementById('sec-'+id).classList.toggle('on',id===t);
+  });
+}
+function olPickTeam(mode,team) {
+  OL.team = team;
+  const pre = mode==='c'?'olc':'olj';
+  document.getElementById(pre+'-tr').className = 'tpb'+(team==='r'?' sel-r':'');
+  document.getElementById(pre+'-tb').className = 'tpb'+(team==='b'?' sel-b':'');
+}
+function genCode() { return String(Math.floor(1000000+Math.random()*9000000)); }
+function olStatus(mode,msg,cls) {
+  const el = document.getElementById('ol-'+mode+'st');
+  el.textContent = msg; el.className = 'olst'+(cls?' '+cls:'');
+}
+
+/* توليد QR Code مع معالجة أخطاء وbadge احترافي */
+function generateQR(code) {
+  const baseUrl = location.origin + location.pathname;
+  const roomUrl = `${baseUrl}?room=${code}`;
+  const img = document.getElementById('qr-img');
+  const lbl = document.getElementById('qr-label');
+
+  // Primary: goqr.me API
+  const primary   = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(roomUrl)}&bgcolor=1c0850&color=f5c842&margin=6&format=png`;
+  // Fallback: quickchart.io
+  const fallback  = `https://quickchart.io/qr?text=${encodeURIComponent(roomUrl)}&size=150&dark=f5c842&light=1c0850`;
+
+  img.style.display = 'none';
+  img.onerror = () => {
+    img.src = fallback;
+    img.onerror = () => { lbl.textContent = `رابط الغرفة: ?room=${code}`; };
+  };
+  img.onload = () => { img.style.display = 'block'; };
+  img.src = primary;
+  lbl.textContent = `كود الغرفة: ${code}`;
+}
+
+function olCreate() {
+  if(!fbDB) { olStatus('c','⚠️ أضف إعدادات Firebase أولاً','err'); return; }
+  const name = document.getElementById('ol-cn').value.trim() || 'اللاعب 1';
+  if(!OL.team) { olStatus('c','اختر فريقك أولاً','err'); return; }
+  const code = genCode(); OL.code=code; OL.isHost=true; OL.pid='p'+Date.now();
+  const data = {code, status:'waiting', host:OL.pid, created:Date.now(),
+    players:{[OL.pid]:{name,team:OL.team,score:0,ts:Date.now()}}};
+  fbRoomRef = fbDB.ref('rooms/'+code);
+  fbRoomRef.set(data)
+    .then(()=>{olStatus('c','✅ الغرفة جاهزة!','ok');setTimeout(()=>enterWait(code),700);})
+    .catch(e=>olStatus('c','❌ '+e.message,'err'));
+}
+
+function olJoin() {
+  if(!fbDB) { olStatus('j','⚠️ أضف إعدادات Firebase أولاً','err'); return; }
+  const name = document.getElementById('ol-jn').value.trim() || 'اللاعب';
+  const code = document.getElementById('ol-jcode').value.trim();
+  if(code.length!==7) { olStatus('j','الكود يجب أن يكون 7 أرقام','err'); return; }
+  if(!OL.team) { olStatus('j','اختر فريقك أولاً','err'); return; }
+  fbDB.ref('rooms/'+code).once('value').then(snap=>{
+    const d=snap.val();
+    if(!d){olStatus('j','❌ لا توجد غرفة بهذا الكود','err');return;}
+    if(d.status==='started'){olStatus('j','❌ اللعبة بدأت بالفعل','err');return;}
+    if(Object.keys(d.players||{}).length>=4){olStatus('j','❌ الغرفة ممتلئة','err');return;}
+    OL.code=code;OL.isHost=false;OL.pid='p'+Date.now();
+    fbRoomRef=fbDB.ref('rooms/'+code);
+    fbRoomRef.child('players/'+OL.pid).set({name,team:OL.team,score:0,ts:Date.now()})
+      .then(()=>{olStatus('j','✅ انضممت!','ok');setTimeout(()=>enterWait(code),700);})
+      .catch(e=>olStatus('j','❌ '+e.message,'err'));
+  }).catch(e=>olStatus('j','❌ '+e.message,'err'));
+}
+
+function enterWait(code) {
+  document.getElementById('room-code').textContent = code;
+  generateQR(code); // توليد QR
+  show('sowait');
+  fbRoomRef.on('value',snap=>{
+    const d=snap.val(); if(!d)return;
+    renderSlots(d.players||{});
+    if(d.status==='started'){applyServerState(d.gameState);enterOnlineGame(d);}
+  });
+}
+
+function renderSlots(players) {
+  const slots = document.getElementById('pslots'); slots.innerHTML='';
+  const list = Object.values(players).sort((a,b)=>a.ts-b.ts);
+  for(let i=0;i<4;i++){
+    const p=list[i];
+    const el=document.createElement('div'); el.className='pslot';
+    const num=document.createElement('span'); num.className='psn'; num.textContent=i+1;
+    const nm=document.createElement('span'); nm.className='psname'+(p?'':' emp'); nm.textContent=p?p.name:'في انتظار اللاعب...';
+    const team=document.createElement('span'); team.className='psteam pst-'+(p?p.team:'r');
+    team.textContent=p?(p.team==='r'?'🔴 '+G.names.r:'🔵 '+G.names.b):(i<2?G.names.r:G.names.b);
+    el.append(num,nm,team); slots.appendChild(el);
+  }
+  const cnt=list.length, btn=document.getElementById('olstart-btn');
+  btn.disabled = cnt<2 || !OL.isHost;
+  btn.textContent = cnt>=2 ? `🚀 ابدأ اللعبة (${cnt}/4 جاهزون)` : `⏳ في انتظار اللاعبين (${cnt}/4)`;
+}
+
+function olStartGame() {
+  if(!OL.isHost) return;
+  readConfig(); initGame();
+  const gs={cells:G.cells.map(c=>({...c})),scores:{r:0,b:0},active:null,curQ:null,phase:'pick'};
+  fbRoomRef.update({status:'started',gameState:gs,startedAt:Date.now()});
+  fbRoomRef.child('gameState/winnerEvent').on('value',snap=>{
+    const we=snap.val(); if(!we||we.processed) return;
+    if(G.active&&we.r===G.active.r&&we.c===G.active.c&&we.answer){
+      const q=G.curQ;
+      if(q&&normalize(we.answer)===normalize(q.a)){
+        const cd=gc(we.r,we.c);
+        if(cd&&!cd.owner){
+          cd.owner=we.team;G.scores[we.team]++;G.usedQ.add(q.q);
+          G.active=null;G.curQ=null;
+          const newGs={cells:G.cells.map(c=>({...c})),scores:{...G.scores},active:null,curQ:null,phase:'pick'};
+          fbRoomRef.update({'gameState':newGs,'gameState/winnerEvent/processed':true});
+          playCorrectSound();checkWin();
+        }
+      }
+    }
+  });
+}
+
+function applyServerState(gs) {
+  if(!gs)return;
+  if(gs.cells) G.cells=gs.cells.map(c=>({...c}));
+  if(gs.scores) G.scores={...gs.scores};
+  G.active=gs.active||null; G.curQ=gs.curQ||null;
+}
+
+function enterOnlineGame(d) {
+  document.getElementById('og-nr').textContent=G.names.r;
+  document.getElementById('og-nb').textContent=G.names.b;
+  document.getElementById('og-dlr').textContent=G.names.r;
+  document.getElementById('og-dlb').textContent=G.names.b;
+  show('song');
+  buildGrid('ogrid',80,Math.round(80*0.866),OL.isHost?ogSelectCell:null);
+  fbRoomRef.on('value',snap=>{
+    const d=snap.val(); if(!d)return;
+    applyServerState(d.gameState);
+    buildGrid('ogrid',80,Math.round(80*0.866),OL.isHost?ogSelectCell:null);
+    document.getElementById('og-sr').textContent=G.scores.r;
+    document.getElementById('og-sb').textContent=G.scores.b;
+    if(G.curQ){
+      document.getElementById('og-q').textContent=G.curQ.q;
+      document.getElementById('og-ltr').textContent='حرف: '+G.curQ.l+' | '+G.curQ.d;
+      const aa=document.getElementById('og-ans-area'); aa.style.display='block';
+      document.getElementById('og-ai').value=''; document.getElementById('og-ai').disabled=false;
+    }else{
+      document.getElementById('og-q').textContent=OL.isHost?'انقر على خلية لاختيارها...':'في انتظار اختيار الخلية...';
+      document.getElementById('og-ltr').textContent='';
+      document.getElementById('og-ans-area').style.display='none';
+    }
+    if(d.players) renderOGPlayers(d.players);
+  });
+}
+
+function ogSelectCell(r,c) {
+  if(!OL.isHost||G.over) return;
+  const cd=gc(r,c); if(cd.owner){toast('هذه الخلية محتلة','terr');return;}
+  G.active={r,c}; loadQ(cd.letter);
+  const newGs={cells:G.cells.map(c=>({...c})),scores:{...G.scores},active:{r,c},curQ:G.curQ,phase:'answer'};
+  fbRoomRef.child('gameState').update(newGs);
+}
+
+function olCheckAnswer(val) {
+  if(!G.curQ||!OL.code||!G.active) return;
+  if(normalize(val)===normalize(G.curQ.a)){
+    document.getElementById('og-ai').disabled=true;
+    showOGFlash('✅ إجابة صحيحة! أنت الأسرع ⚡','ok');
+    playCorrectSound();
+    fbRoomRef.child('gameState/winnerEvent').set({
+      player:OL.pid,team:OL.team,r:G.active.r,c:G.active.c,
+      answer:val,ts:Date.now(),processed:false
+    });
+  }
+}
+
+function normalize(s) {
+  return (s||'').trim().replace(/\s+/g,' ')
+    .replace(/[إأآا]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي')
+    .replace(/[^ا-ي0-9a-zA-Z]/g,'').toLowerCase();
+}
+
+function showOGFlash(msg,cls) {
+  const el=document.getElementById('og-flash');
+  el.textContent=msg; el.className='ogflash '+cls;
+  setTimeout(()=>el.style.display='none',3500);
+}
+
+function renderOGPlayers(players) {
+  const el=document.getElementById('og-plist'); el.innerHTML='';
+  Object.values(players).sort((a,b)=>(b.score||0)-(a.score||0)).forEach(p=>{
+    const row=document.createElement('div'); row.className='ogprow';
+    const dot=document.createElement('div'); dot.className='ogpdot';
+    dot.style.background=p.team==='r'?'var(--t1)':'var(--t2)';
+    const nm=document.createElement('span'); nm.className='ogpname'; nm.textContent=p.name;
+    const sc=document.createElement('span'); sc.className='ogpscore'; sc.textContent=p.score||0;
+    row.append(dot,nm,sc); el.appendChild(row);
+  });
+}
+
+function olLeave() { if(fbRoomRef){fbRoomRef.off();fbRoomRef=null;} show('s-settings'); }
+
+/* ════════════════════════════════════════════════════════
+   التنقل والبدء
+   ════════════════════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+function startGame(mode) {
+  readConfig();
+  G.names.r = document.getElementById('cfg-t1').value.trim() || 'الفريق الأول';
+  G.names.b = document.getElementById('cfg-t2').value.trim() || 'الفريق الثاني';
+  G.winRounds = CFG.rounds;
+  G._lm = mode==='host'?'sh':mode==='self'?'ss':'sd';
+  
+  // تحديث جميع الأسماء
+  const n1=G.names.r, n2=G.names.b;
+  const compName=CFG.name;
+  ['hnr','dlr','jlr','sp-nr','sp-dlr','og-dlr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=n1;});
+  ['hnb','dlb','jlb','sp-nb','sp-dlb','og-dlb'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=n2;});
+  ['dnr','snr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=n1;});
+  ['dnb','snb'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=n2;});
+  ['h-comp-name','d-comp-name'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=compName;});
+  
+  initGame(); syncAll(); disableJ(); setStat('اختر خلية من الشبكة لبدء اللعب');
+  
+  if(mode==='self') {
+    spReset();
+    const szs = calcHexSize('sgrid');
+    buildGrid('sgrid', szs.W, szs.H, spActivate, true);
+    show('ss');
+  } else if(mode==='display') {
+    show('sd');
+  } else {
+    // أعد بناء الشبكة مع الانيميشن بعد الانتقال للشاشة
+    show('sh');
+    setTimeout(() => {
+      const sz = calcHexSize('hgrid');
+      buildGrid('hgrid', sz.W, sz.H, activateCell, true);
+    }, 50);
+  }
+}
+
+function goDisp() { syncAll(); show('sd'); }
+
+function resetGame() {
+  if(G.lockTimer) clearInterval(G.lockTimer);
+  initGame(); syncAll(); resetPanel();
+  document.getElementById('lkbx').classList.remove('on');
+  setStat('اختر خلية لبدء اللعب');
+  if(document.getElementById('ss').classList.contains('on')) {
+    spReset();
+    const szs = calcHexSize('sgrid');
+    buildGrid('sgrid', szs.W, szs.H, spActivate, true);
+  } else if(document.getElementById('sh').classList.contains('on')) {
+    setTimeout(() => {
+      const sz = calcHexSize('hgrid');
+      buildGrid('hgrid', sz.W, sz.H, activateCell, true);
+    }, 50);
+  }
+}
+
+function setStat(m) { const el=document.getElementById('hpst');if(el)el.textContent=m; }
+
+/* ════════════════════════════════════════════════════════
+   الصوت
+   ════════════════════════════════════════════════════════ */
+let AC;
+function getAC() { if(!AC) AC=new(window.AudioContext||window.webkitAudioContext)(); return AC; }
+function tone(freq,dur,vol=0.28,type='sine') {
+  try {
+    const ac=getAC(),o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);
+    o.type=type;o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,ac.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+dur);
+    o.start();o.stop(ac.currentTime+dur);
+  } catch(e){}
+}
+function playCorrectSound() { tone(523,.11);setTimeout(()=>tone(659,.11),110);setTimeout(()=>tone(784,.2,.3),220); }
+function playWinSound() {
+  [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,.22,.3),i*170));
+  setTimeout(()=>{for(let i=0;i<5;i++)setTimeout(()=>tone(800+i*120,.09,.18,'square'),i*75);},800);
+}
+
+/* ════════════════════════════════════════════════════════
+   الكونفيتي
+   ════════════════════════════════════════════════════════ */
+function confetti(team) {
+  const th = THEMES[currentTheme];
+  const cols = team==='r'
+    ? [th.t1, th.t1_2, '#fff', '#ffd0b0', '#ffcc00', '#ff6b6b']
+    : [th.t2, th.t2_2, '#fff', '#b0d8ff', '#00ccff', '#a78bfa'];
+  const w = document.getElementById('cfw'); w.innerHTML='';
+  const shapes = ['50%','3px','0']; // circle, rect, triangle-ish
+  for(let i=0;i<200;i++){
+    const el=document.createElement('div'); el.className='cfp';
+    const c=cols[i%cols.length];
+    const sz=4+Math.random()*14;
+    const shape=shapes[Math.floor(Math.random()*shapes.length)];
+    const spin=Math.random()*1080-540;
+    el.style.cssText=`
+      left:${Math.random()*100}%;
+      background:${c};
+      width:${sz}px;height:${sz*(0.6+Math.random()*0.8)}px;
+      border-radius:${shape};
+      animation-duration:${2.2+Math.random()*3.5}s;
+      animation-delay:${Math.random()*1.8}s;
+      --dx:${(Math.random()-.5)*320}px;
+      --spin:${spin}deg;
+      transform:rotate(${Math.random()*360}deg);
+      opacity:${0.8+Math.random()*0.2}
+    `;
+    w.appendChild(el);
+  }
+  setTimeout(()=>w.innerHTML='',10000);
+}
+
+/* ════════════════════════════════════════════════════════
+   Toast
+   ════════════════════════════════════════════════════════ */
+function toast(msg,cls) {
+  const w=document.getElementById('tw'),el=document.createElement('div');
+  el.className='toast'+(cls?' '+cls:'');
+  el.textContent=msg; w.appendChild(el);
+  setTimeout(()=>el.remove(),3100);
+}
+
+/* ════════════════════════════════════════════════════════
+   تهيئة عند تحميل الصفحة
+   ════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', () => {
+  buildSettingsUI();
+  applyTheme(0); // الثيم الافتراضي
+
+  // استماع لتغيير حجم الشاشة وإعادة بناء الشبكة
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if(!G.cells.length) return;
+      syncAll();
+    }, 200);
+  });
+});
+</script>
+</body>
+</html>
