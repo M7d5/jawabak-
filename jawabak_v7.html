@@ -469,27 +469,123 @@ input, button { font-family:'Cairo',sans-serif }
 .olstart:hover { transform:translateY(-2px) }
 .olstart:disabled { opacity:.3; cursor:not-allowed; transform:none }
 
+/* ════ Team Slots — غرفة الانتظار ════ */
+.teams-slots-row { display:flex; gap:10px }
+.team-slots-wrap { flex:1; display:flex; flex-direction:column; gap:5px }
+.team-slots-hdr {
+  font-size:11px; font-weight:800; padding:5px 10px;
+  border-radius:7px; text-align:center; letter-spacing:.5px;
+}
+.team-slots-hdr.pst-r { background:var(--t1-bg); color:var(--t1-2); border:1px solid rgba(232,96,30,.35) }
+.team-slots-hdr.pst-b { background:var(--t2-bg); color:var(--t2-2); border:1px solid rgba(28,114,238,.35) }
+.pslot { display:flex; align-items:center; gap:8px; padding:7px 10px;
+  background:rgba(255,255,255,.04); border:1.5px solid var(--bdr);
+  border-radius:8px; transition:all .2s }
+.pslot.pslot-filled { background:rgba(255,255,255,.08); border-color:rgba(255,255,255,.2) }
+.psdot { width:8px; height:8px; border-radius:50%; flex-shrink:0 }
+.psdot.pst-r { background:var(--t1) }
+.psdot.pst-b { background:var(--t2) }
+.psbadge { font-size:9px; font-weight:700; color:var(--gold); margin-right:auto }
+
+/* ════ Online Game Improvements ════ */
+.og-letter-badge {
+  display:inline-block; background:var(--gold); color:#1c0850;
+  font-size:18px; font-weight:900; width:34px; height:34px;
+  border-radius:8px; text-align:center; line-height:34px;
+  vertical-align:middle; margin-left:6px;
+  box-shadow:0 3px 10px rgba(245,200,66,.4);
+}
+.ogflash.ok-r { color:var(--t1-2); background:var(--t1-bg); border-color:var(--t1) }
+.ogflash.ok-b { color:var(--t2-2); background:var(--t2-bg); border-color:var(--t2) }
+
 /* ════ اللعبة الأونلاين ════ */
-#song { background:var(--bg2) }
+#song { background:radial-gradient(ellipse at 50% 0%,#5020a8 0%,#1e0660 100%) }
 .ogbody { flex:1; display:flex; min-height:0 }
-.ogpanel { width:296px; flex-shrink:0; background:var(--panel); border-right:1px solid var(--bdr); display:flex; flex-direction:column; overflow-y:auto; padding:11px }
-.ogqbox { background:rgba(255,255,255,.06); border:1.5px solid var(--bdr); border-radius:11px; padding:13px; margin-bottom:10px }
-.ogqtxt { font-size:14px; line-height:1.9; color:#e0d8ff; font-weight:600; min-height:42px }
-.ogqltr { font-size:11px; color:var(--gold2); font-weight:700; margin-top:5px }
-.oginput { width:100%; padding:11px 13px; font-size:16px; font-weight:700; background:rgba(255,255,255,.1); border:2px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; direction:rtl; outline:none; transition:border-color .2s; text-align:center; margin-bottom:6px }
-.oginput:focus { border-color:var(--gold) }
-.oginput::placeholder { color:rgba(255,255,255,.28) }
-.oginput:disabled { opacity:.45 }
-.ogspeed { font-size:11px; color:var(--dim); text-align:center; margin-bottom:9px }
-.ogflash { font-size:15px; font-weight:900; text-align:center; padding:9px 16px; border-radius:10px; animation:flashin .28s ease; display:none; margin-bottom:8px }
-.ogflash.ok { background:rgba(34,197,94,.2); border:1.5px solid #22c55e; color:#6ee89a; display:block }
-.ogflash.err { background:rgba(239,68,68,.2); border:1.5px solid #ef4444; color:#fca5a5; display:block }
+.ogpanel {
+  width:310px; flex-shrink:0;
+  background:rgba(14,4,50,.75);
+  border-right:1px solid var(--bdr);
+  display:flex; flex-direction:column;
+  overflow-y:auto; padding:12px;
+  backdrop-filter:blur(12px);
+}
+.ogqbox {
+  background:rgba(255,255,255,.06);
+  border:1.5px solid rgba(255,255,255,.12);
+  border-radius:13px; padding:14px; margin-bottom:10px;
+}
+.ogqbox-title {
+  font-size:9px; font-weight:800; letter-spacing:3px;
+  color:rgba(190,150,255,.7); margin-bottom:8px; text-transform:uppercase;
+}
+.ogqtxt {
+  font-size:15px; line-height:1.75; color:#fff;
+  font-weight:700; min-height:44px;
+  padding:10px 12px;
+  background:rgba(255,255,255,.05); border-radius:9px;
+  border-right:3px solid var(--gold);
+  animation:fadeUp .25s ease;
+  margin-bottom:8px;
+}
+.ogqltr {
+  display:flex; align-items:center; gap:8px;
+  font-size:11px; color:var(--dim); margin-bottom:10px;
+}
+.og-letter-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  background:var(--gold); color:#1c0850;
+  font-size:18px; font-weight:900; width:34px; height:34px;
+  border-radius:8px; flex-shrink:0;
+  box-shadow:0 3px 10px rgba(245,200,66,.4);
+}
+.oginput {
+  width:100%; padding:12px 14px; font-size:17px; font-weight:800;
+  background:rgba(255,255,255,.08);
+  border:2px solid rgba(255,255,255,.18); border-radius:11px;
+  color:#fff; direction:rtl; outline:none;
+  transition:all .2s; text-align:center; margin-bottom:6px;
+}
+.oginput:focus {
+  border-color:var(--gold); background:rgba(245,200,66,.07);
+  box-shadow:0 0 0 3px rgba(245,200,66,.15);
+}
+.oginput::placeholder { color:rgba(255,255,255,.25) }
+.oginput:disabled { opacity:.35; cursor:not-allowed }
+.ogspeed {
+  font-size:10px; color:var(--gold); text-align:center;
+  margin-bottom:8px; font-weight:800; letter-spacing:.5px;
+  animation: pulse 1.8s ease infinite;
+}
+.ogflash {
+  font-size:13px; font-weight:800; text-align:center;
+  padding:9px 14px; border-radius:10px;
+  animation:popIn .28s cubic-bezier(.34,1.56,.64,1);
+  display:none; margin-bottom:8px;
+  border:1.5px solid transparent;
+}
+.ogflash.ok { background:rgba(34,197,94,.18); border-color:#22c55e; color:#6ee89a; display:block }
+.ogflash.ok-r { background:var(--t1-bg); border-color:var(--t1); color:var(--t1-2); display:block }
+.ogflash.ok-b { background:var(--t2-bg); border-color:var(--t2); color:var(--t2-2); display:block }
+.ogflash.err { background:rgba(239,68,68,.18); border-color:#ef4444; color:#fca5a5; display:block }
 @keyframes flashin { from{transform:scale(.82);opacity:0} to{transform:scale(1);opacity:1} }
-.ogplist-hdr { font-size:9px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:rgba(190,150,255,.8); margin-bottom:7px }
-.ogprow { display:flex; align-items:center; gap:7px; padding:6px 9px; border-radius:8px; margin-bottom:4px; background:rgba(255,255,255,.04) }
-.ogpdot { width:9px; height:9px; border-radius:50%; flex-shrink:0 }
-.ogpname { flex:1; font-size:12px; font-weight:600 }
-.ogpscore { font-size:14px; font-weight:900 }
+.ogplist-hdr {
+  font-size:9px; font-weight:800; letter-spacing:3px;
+  text-transform:uppercase; color:rgba(190,150,255,.7); margin-bottom:8px;
+}
+.ogprow {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:9px; margin-bottom:5px;
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.07);
+  transition:all .2s;
+}
+.ogprow:hover { background:rgba(255,255,255,.09) }
+.ogpdot { width:10px; height:10px; border-radius:50%; flex-shrink:0 }
+.ogpname { flex:1; font-size:12px; font-weight:700 }
+.ogpscore {
+  font-size:15px; font-weight:900; min-width:24px;
+  text-align:center;
+}
 
 /* ════ شاشة الفوز ════ */
 #swin {
@@ -867,7 +963,29 @@ footer b { color:rgba(245,200,66,.48) }
       </div>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <!-- زر QR للتحكم عبر الجوال في وضع العرض -->
+  <div id="sd-ctrl-panel" style="
+    position:fixed; bottom:18px; left:18px; z-index:200;
+    display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+  ">
+    <button onclick="toggleSDQR()" style="
+      background:rgba(22,6,70,.92); border:1.5px solid rgba(245,200,66,.5);
+      color:var(--gold); border-radius:12px; padding:8px 14px;
+      font-size:12px; font-weight:800; cursor:pointer;
+      box-shadow:0 4px 18px rgba(0,0,0,.4);
+      display:flex; align-items:center; gap:7px;
+    ">📱 تحكم من الجوال</button>
+    <div id="sd-qr-box" style="display:none;
+      background:rgba(12,3,45,.96); border:2px solid rgba(245,200,66,.45);
+      border-radius:16px; padding:14px; text-align:center;
+      box-shadow:0 8px 32px rgba(0,0,0,.6);
+    ">
+      <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:2px;margin-bottom:8px">امسح للتحكم</div>
+      <img id="sd-qr-img" src="" width="140" height="140" style="border-radius:10px;border:2px solid rgba(245,200,66,.4);display:none">
+      <div id="sd-qr-lbl" style="font-size:11px;color:var(--dim);margin-top:6px"></div>
+    </div>
+  </div>
+  <footer><b>جوابك v7</b></footer>
 </div>
 
 <!-- ════ اللوبي الأونلاين ════ -->
@@ -957,7 +1075,7 @@ footer b { color:rgba(245,200,66,.48) }
     </div>
     <div class="ogpanel">
       <div class="ogqbox">
-        <div style="font-size:9px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(190,150,255,.8);margin-bottom:7px">السؤال الحالي</div>
+        <div class="ogqbox-title">السؤال الحالي</div>
         <div class="ogqtxt" id="og-q">في انتظار بدء الدور...</div>
         <div class="ogqltr" id="og-ltr"></div>
       </div>
@@ -2200,41 +2318,113 @@ function enterWait(code) {
 
 function renderSlots(players) {
   const slots = document.getElementById('pslots'); slots.innerHTML='';
-  const list = Object.values(players).sort((a,b)=>a.ts-b.ts);
-  for(let i=0;i<4;i++){
-    const p=list[i];
-    const el=document.createElement('div'); el.className='pslot';
-    const num=document.createElement('span'); num.className='psn'; num.textContent=i+1;
-    const nm=document.createElement('span'); nm.className='psname'+(p?'':' emp'); nm.textContent=p?p.name:'في انتظار اللاعب...';
-    const team=document.createElement('span'); team.className='psteam pst-'+(p?p.team:'r');
-    team.textContent=p?(p.team==='r'?'🔴 '+G.names.r:'🔵 '+G.names.b):(i<2?G.names.r:G.names.b);
-    el.append(num,nm,team); slots.appendChild(el);
+  const list = Object.values(players||{}).sort((a,b)=>a.ts-b.ts);
+  const rPlayers = list.filter(p=>p.team==='r');
+  const bPlayers = list.filter(p=>p.team==='b');
+
+  // رسم كل فريق على حدة (2 مقعد لكل فريق)
+  const makeTeamSlots = (teamPlayers, team, label) => {
+    const wrap = document.createElement('div');
+    wrap.className = 'team-slots-wrap';
+    const hdr = document.createElement('div');
+    hdr.className = 'team-slots-hdr pst-'+team;
+    hdr.textContent = (team==='r'?'🔴 ':'🔵 ')+label;
+    wrap.appendChild(hdr);
+    for(let i=0;i<2;i++){
+      const p = teamPlayers[i];
+      const el = document.createElement('div');
+      el.className = 'pslot'+(p?' pslot-filled':'');
+      const dot = document.createElement('div');
+      dot.className = 'psdot pst-'+team;
+      const nm = document.createElement('span');
+      nm.className = 'psname'+(p?'':' emp');
+      nm.textContent = p ? p.name : 'في انتظار...';
+      const badge = document.createElement('span');
+      badge.className = 'psbadge';
+      badge.textContent = p ? (OL.pid===p.pid?'أنت':'✓') : '';
+      el.append(dot,nm,badge);
+      wrap.appendChild(el);
+    }
+    return wrap;
+  };
+
+  const teamsRow = document.createElement('div');
+  teamsRow.className = 'teams-slots-row';
+  teamsRow.appendChild(makeTeamSlots(rPlayers,'r',G.names.r||'الفريق الأول'));
+  teamsRow.appendChild(makeTeamSlots(bPlayers,'b',G.names.b||'الفريق الثاني'));
+  slots.appendChild(teamsRow);
+
+  const cnt = list.length;
+  const btn = document.getElementById('olstart-btn');
+  const hasR = rPlayers.length>0, hasB = bPlayers.length>0;
+  const canStart = hasR && hasB && OL.isHost;
+  btn.disabled = !canStart;
+  if(!OL.isHost) {
+    btn.textContent = '⏳ في انتظار المضيف...';
+  } else if(!hasR||!hasB) {
+    btn.textContent = `⏳ يجب وجود لاعب في كل فريق (${cnt} متصل)`;
+  } else {
+    btn.textContent = `🚀 ابدأ اللعبة — ${cnt} لاعبين جاهزون`;
   }
-  const cnt=list.length, btn=document.getElementById('olstart-btn');
-  btn.disabled = cnt<2 || !OL.isHost;
-  btn.textContent = cnt>=2 ? `🚀 ابدأ اللعبة (${cnt}/4 جاهزون)` : `⏳ في انتظار اللاعبين (${cnt}/4)`;
 }
 
 function olStartGame() {
   if(!OL.isHost) return;
   readConfig(); initGame();
-  const gs={cells:G.cells.map(c=>({...c})),scores:{r:0,b:0},active:null,curQ:null,phase:'pick'};
-  fbRoomRef.update({status:'started',gameState:gs,startedAt:Date.now()});
-  fbRoomRef.child('gameState/winnerEvent').on('value',snap=>{
-    const we=snap.val(); if(!we||we.processed) return;
-    if(G.active&&we.r===G.active.r&&we.c===G.active.c&&we.answer){
-      const q=G.curQ;
-      if(q&&normalize(we.answer)===normalize(q.a)){
-        const cd=gc(we.r,we.c);
-        if(cd&&!cd.owner){
-          cd.owner=we.team;G.scores[we.team]++;G.usedQ.add(q.q);
-          G.active=null;G.curQ=null;
-          const newGs={cells:G.cells.map(c=>({...c})),scores:{...G.scores},active:null,curQ:null,phase:'pick'};
-          fbRoomRef.update({'gameState':newGs,'gameState/winnerEvent/processed':true});
-          playCorrectSound();checkWin();
-        }
+  G.usedQ = new Set(); // إعادة تعيين الأسئلة المستخدمة
+  const gs = {
+    cells: G.cells.map(c=>({...c})),
+    scores: {r:0,b:0},
+    active: null,
+    curQ: null,
+    phase: 'pick',
+    usedQ: [],
+    turn: 'r' // الدور يتبادل
+  };
+  fbRoomRef.update({status:'started', gameState:gs, startedAt:Date.now()});
+
+  // المضيف يراقب الإجابات ويحكم
+  fbRoomRef.child('gameState/winnerEvent').on('value', snap=>{
+    const we = snap.val();
+    if(!we || we.processed) return;
+    const q = G.curQ;
+    if(!q || !G.active) return;
+    if(we.r !== G.active.r || we.c !== G.active.c) return;
+
+    if(normalize(we.answer) === normalize(q.a)) {
+      const cd = gc(we.r, we.c);
+      if(cd && !cd.owner) {
+        cd.owner = we.team;
+        G.scores[we.team]++;
+        G.usedQ.add(q.q);
+        G.active = null; G.curQ = null;
+        const newGs = {
+          cells: G.cells.map(c=>({...c})),
+          scores: {...G.scores},
+          active: null, curQ: null,
+          phase: 'pick',
+          usedQ: [...G.usedQ],
+          lastWinner: {name: we.playerName||'', team: we.team},
+          winnerEvent: {processed:true}
+        };
+        fbRoomRef.child('gameState').update(newGs);
+        playCorrectSound(); checkWin();
       }
     }
+  });
+
+  // المضيف يراقب طلبات تغيير السؤال
+  fbRoomRef.child('gameState/changeQReq').on('value', snap=>{
+    const req = snap.val();
+    if(!req || req.processed || !G.curQ || !G.active) return;
+    G.usedQ.add(G.curQ.q);
+    loadQ(gc(G.active.r, G.active.c).letter);
+    const upd = {
+      'gameState/curQ': G.curQ,
+      'gameState/usedQ': [...G.usedQ],
+      'gameState/changeQReq/processed': true
+    };
+    fbRoomRef.update(upd);
   });
 }
 
@@ -2245,50 +2435,115 @@ function applyServerState(gs) {
   G.active=gs.active||null; G.curQ=gs.curQ||null;
 }
 
+let _ogListenerAttached = false;
 function enterOnlineGame(d) {
-  document.getElementById('og-nr').textContent=G.names.r;
-  document.getElementById('og-nb').textContent=G.names.b;
-  document.getElementById('og-dlr').textContent=G.names.r;
-  document.getElementById('og-dlb').textContent=G.names.b;
+  ['og-nr','og-dlr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=G.names.r;});
+  ['og-nb','og-dlb'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=G.names.b;});
   show('song');
-  buildGrid('ogrid',80,Math.round(80*0.866),OL.isHost?ogSelectCell:null);
-  fbRoomRef.on('value',snap=>{
-    const d=snap.val(); if(!d)return;
+
+  // بناء الشبكة مرة واحدة
+  const ogSz = calcHexSize('ogrid');
+  buildGrid('ogrid', ogSz.W, ogSz.H, OL.isHost ? ogSelectCell : null, true);
+
+  if(_ogListenerAttached) return;
+  _ogListenerAttached = true;
+
+  fbRoomRef.on('value', snap=>{
+    const d = snap.val(); if(!d) return;
+
+    // تطبيق الحالة
+    const prevActive = G.active ? `${G.active.r},${G.active.c}` : null;
     applyServerState(d.gameState);
-    buildGrid('ogrid',80,Math.round(80*0.866),OL.isHost?ogSelectCell:null);
-    document.getElementById('og-sr').textContent=G.scores.r;
-    document.getElementById('og-sb').textContent=G.scores.b;
-    if(G.curQ){
-      document.getElementById('og-q').textContent=G.curQ.q;
-      document.getElementById('og-ltr').textContent='حرف: '+G.curQ.l+' | '+G.curQ.d;
-      const aa=document.getElementById('og-ans-area'); aa.style.display='block';
-      document.getElementById('og-ai').value=''; document.getElementById('og-ai').disabled=false;
-    }else{
-      document.getElementById('og-q').textContent=OL.isHost?'انقر على خلية لاختيارها...':'في انتظار اختيار الخلية...';
-      document.getElementById('og-ltr').textContent='';
-      document.getElementById('og-ans-area').style.display='none';
+    if(d.gameState?.usedQ) d.gameState.usedQ.forEach(q=>G.usedQ.add(q));
+    const newActive = G.active ? `${G.active.r},${G.active.c}` : null;
+
+    // أعد رسم الشبكة فقط عند تغيير الخلايا
+    const sz = calcHexSize('ogrid');
+    buildGrid('ogrid', sz.W, sz.H, OL.isHost ? ogSelectCell : null, false);
+
+    // تحديث النتيجة
+    document.getElementById('og-sr').textContent = G.scores.r;
+    document.getElementById('og-sb').textContent = G.scores.b;
+
+    // آخر فائز
+    if(d.gameState?.lastWinner) {
+      const lw = d.gameState.lastWinner;
+      showOGFlash(`🏆 ${lw.name} فاز بالخلية!`, lw.team==='r'?'ok-r':'ok-b');
     }
+
+    // عرض السؤال
+    ogUpdateQuestion(d.gameState);
+
+    // قائمة اللاعبين
     if(d.players) renderOGPlayers(d.players);
   });
 }
 
+function ogUpdateQuestion(gs) {
+  const qEl  = document.getElementById('og-q');
+  const lEl  = document.getElementById('og-ltr');
+  const aa   = document.getElementById('og-ans-area');
+  const inp  = document.getElementById('og-ai');
+
+  if(gs?.curQ) {
+    const q = gs.curQ;
+    const stars = q.d==='سهل'?'⭐':q.d==='متوسط'?'⭐⭐':'⭐⭐⭐';
+    qEl.textContent = q.q;
+    lEl.innerHTML = `<span class="og-letter-badge">${gs.active ? gc(gs.active.r,gs.active.c)?.letter||'' : ''}</span> ${stars} ${q.d}`;
+    aa.style.display = 'block';
+    // أعد تفعيل حقل الإجابة فقط لو الخلية تغيرت
+    if(inp.dataset.activeKey !== `${gs.active?.r},${gs.active?.c}`) {
+      inp.value = '';
+      inp.disabled = false;
+      inp.dataset.activeKey = `${gs.active?.r},${gs.active?.c}`;
+    }
+  } else {
+    qEl.textContent = OL.isHost ? '👆 انقر على خلية لاختيار السؤال' : '⏳ في انتظار اختيار الخلية...';
+    lEl.textContent = '';
+    aa.style.display = 'none';
+    inp.dataset.activeKey = '';
+  }
+}
+
 function ogSelectCell(r,c) {
-  if(!OL.isHost||G.over) return;
-  const cd=gc(r,c); if(cd.owner){toast('هذه الخلية محتلة','terr');return;}
-  G.active={r,c}; loadQ(cd.letter);
-  const newGs={cells:G.cells.map(c=>({...c})),scores:{...G.scores},active:{r,c},curQ:G.curQ,phase:'answer'};
-  fbRoomRef.child('gameState').update(newGs);
+  if(!OL.isHost || G.over) return;
+  const cd = gc(r,c);
+  if(cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
+  G.active = {r,c};
+  loadQ(cd.letter); // يضمن سؤال بنفس حرف الخلية
+  // احذف أي إجابة سابقة
+  fbRoomRef.child('gameState/winnerEvent').remove();
+  const newGs = {
+    cells: G.cells.map(c=>({...c})),
+    scores: {...G.scores},
+    active: {r,c},
+    curQ: G.curQ,
+    phase: 'answer',
+    usedQ: [...G.usedQ],
+    lastWinner: null,
+    winnerEvent: null
+  };
+  fbRoomRef.child('gameState').set(newGs);
+  toast(`▶️ الخلية "${cd.letter}" — السؤال على الهواء!`);
 }
 
 function olCheckAnswer(val) {
-  if(!G.curQ||!OL.code||!G.active) return;
-  if(normalize(val)===normalize(G.curQ.a)){
-    document.getElementById('og-ai').disabled=true;
-    showOGFlash('✅ إجابة صحيحة! أنت الأسرع ⚡','ok');
+  if(!G.curQ || !OL.code || !G.active) return;
+  if(normalize(val) === normalize(G.curQ.a)) {
+    document.getElementById('og-ai').disabled = true;
+    const playerName = OL.isHost
+      ? document.getElementById('ol-cn').value.trim()||'المضيف'
+      : document.getElementById('ol-jn').value.trim()||'لاعب';
+    showOGFlash(`✅ إجابة صحيحة! أنت الأسرع ⚡`, 'ok');
     playCorrectSound();
     fbRoomRef.child('gameState/winnerEvent').set({
-      player:OL.pid,team:OL.team,r:G.active.r,c:G.active.c,
-      answer:val,ts:Date.now(),processed:false
+      player: OL.pid,
+      playerName,
+      team: OL.team,
+      r: G.active.r, c: G.active.c,
+      answer: val,
+      ts: Date.now(),
+      processed: false
     });
   }
 }
@@ -2300,9 +2555,14 @@ function normalize(s) {
 }
 
 function showOGFlash(msg,cls) {
-  const el=document.getElementById('og-flash');
-  el.textContent=msg; el.className='ogflash '+cls;
-  setTimeout(()=>el.style.display='none',3500);
+  const el = document.getElementById('og-flash');
+  el.className = 'ogflash'; // reset
+  el.style.display = 'none';
+  void el.offsetWidth; // restart animation
+  el.textContent = msg;
+  el.className = 'ogflash ' + cls;
+  clearTimeout(el._t);
+  el._t = setTimeout(()=>{ el.className='ogflash'; el.style.display='none'; }, 4000);
 }
 
 function renderOGPlayers(players) {
@@ -2317,7 +2577,28 @@ function renderOGPlayers(players) {
   });
 }
 
-function olLeave() { if(fbRoomRef){fbRoomRef.off();fbRoomRef=null;} show('s-settings'); }
+function olLeave() {
+  if(fbRoomRef){fbRoomRef.off();fbRoomRef=null;}
+  _ogListenerAttached = false;
+  show('s-settings');
+}
+
+/* QR للتحكم من الجوال في وضع العرض */
+function toggleSDQR() {
+  const box = document.getElementById('sd-qr-box');
+  const isOpen = box.style.display !== 'none';
+  if(isOpen) { box.style.display='none'; return; }
+  box.style.display = 'block';
+  // توليد QR بالرابط الحالي
+  const url = location.href.split('?')[0];
+  const img = document.getElementById('sd-qr-img');
+  const lbl = document.getElementById('sd-qr-lbl');
+  const primary = `https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=${encodeURIComponent(url)}&bgcolor=0c032d&color=f5c842&margin=6`;
+  img.onerror = ()=>{ lbl.textContent = url; };
+  img.onload  = ()=>{ img.style.display='block'; };
+  img.src = primary;
+  lbl.textContent = 'امسح QR بالجوال';
+}
 
 /* ════════════════════════════════════════════════════════
    التنقل والبدء
