@@ -3,39 +3,78 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>جوابك v7</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<title>جوابك v9</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
 /* ════════════════════════════════════════════════════════
    CSS VARIABLES — يتم تحديثها ديناميكياً من إعدادات اللعبة
    ════════════════════════════════════════════════════════ */
-:root {
-  --bg: #4e22a0;
-  --bg2: #3e1890;
-  --panel: rgba(28,8,80,.62);
-  --bdr: rgba(255,255,255,.13);
-  /* ألوان الفريقين — يتم تعديلها عند اختيار الثيم */
-  --t1: #e8601e;        /* لون الفريق 1 */
-  --t1-2: #ff9055;      /* تدرج الفريق 1 */
-  --t1-bg: rgba(232,96,30,.18);
-  --t1-hex: #e8601e;    /* لون الخلية الفريق 1 */
-  --t2: #1c72ee;        /* لون الفريق 2 */
-  --t2-2: #70baff;
-  --t2-bg: rgba(28,114,238,.18);
-  --t2-hex: #1c72ee;    /* لون الخلية الفريق 2 */
-  --gold: #f5c842;
-  --gold2: #fde98a;
-  --dim: rgba(255,255,255,.5);
-  /* متغيرات الشبكة */
+/* ════ DARK MODE (default) ════ */
+:root, [data-theme="dark"] {
+  --bg:      #0f0528;
+  --bg2:     #1a0845;
+  --bg3:     #230d5c;
+  --panel:   rgba(20,6,60,.72);
+  --panel2:  rgba(30,10,80,.55);
+  --bdr:     rgba(255,255,255,.10);
+  --bdr2:    rgba(255,255,255,.06);
+  --text:    #f0ecff;
+  --text2:   rgba(240,236,255,.75);
+  --dim:     rgba(240,236,255,.45);
+  --t1:      #e8601e;
+  --t1-2:    #ff9055;
+  --t1-bg:   rgba(232,96,30,.18);
+  --t1-hex:  #e8601e;
+  --t2:      #1c72ee;
+  --t2-2:    #70baff;
+  --t2-bg:   rgba(28,114,238,.18);
+  --t2-hex:  #1c72ee;
+  --gold:    #f5c842;
+  --gold2:   #fde98a;
   --grid-size: 5;
+  --hex-neutral: rgba(255,255,255,.92);
+  --hex-neutral-txt: #1a0845;
+  --shadow: rgba(0,0,0,.4);
+  --glow: rgba(120,60,255,.3);
+  color-scheme: dark;
+}
+
+/* ════ LIGHT MODE ════ */
+[data-theme="light"] {
+  --bg:      #f0edff;
+  --bg2:     #e4deff;
+  --bg3:     #d8d0ff;
+  --panel:   rgba(255,255,255,.82);
+  --panel2:  rgba(255,255,255,.65);
+  --bdr:     rgba(80,40,180,.15);
+  --bdr2:    rgba(80,40,180,.08);
+  --text:    #1a0845;
+  --text2:   rgba(26,8,69,.8);
+  --dim:     rgba(26,8,69,.5);
+  --t1:      #c94e0e;
+  --t1-2:    #e8601e;
+  --t1-bg:   rgba(201,78,14,.12);
+  --t1-hex:  #e05010;
+  --t2:      #1255cc;
+  --t2-2:    #1c72ee;
+  --t2-bg:   rgba(18,85,204,.12);
+  --t2-hex:  #1258d0;
+  --gold:    #c89a00;
+  --gold2:   #d4aa20;
+  --hex-neutral: rgba(255,255,255,.95);
+  --hex-neutral-txt: #1a0845;
+  --shadow: rgba(80,40,180,.18);
+  --glow: rgba(100,60,220,.15);
+  color-scheme: light;
 }
 
 /* ════ RESET ════ */
 *,*::before,*::after { margin:0; padding:0; box-sizing:border-box }
 html, body { width:100%; height:100%; overflow:hidden }
-body { font-family:'Cairo',sans-serif; background:var(--bg); color:#fff; user-select:none }
+body { font-family:'Cairo','Tajawal',sans-serif; background:var(--bg); color:var(--text); user-select:none; transition:background .35s, color .35s }
 input, button { font-family:'Cairo',sans-serif }
 
 /* ════ SCREEN SYSTEM — مع انتقال سلس ════ */
@@ -567,6 +606,33 @@ input, button { font-family:'Cairo',sans-serif }
 .ogflash.ok-r { background:var(--t1-bg); border-color:var(--t1); color:var(--t1-2); display:block }
 .ogflash.ok-b { background:var(--t2-bg); border-color:var(--t2); color:var(--t2-2); display:block }
 .ogflash.err { background:rgba(239,68,68,.18); border-color:#ef4444; color:#fca5a5; display:block }
+
+/* مربع الدور */
+.og-turn-box {
+  padding:9px 14px; border-radius:10px; font-size:13px;
+  font-weight:800; text-align:center; margin-bottom:8px;
+  animation:popIn .28s cubic-bezier(.34,1.56,.64,1);
+  border:1.5px solid transparent;
+}
+.og-turn-mine {
+  background:rgba(245,200,66,.15); border-color:var(--gold);
+  color:var(--gold); animation:actpulse 1.5s ease infinite;
+}
+.og-turn-other {
+  background:rgba(255,255,255,.06); border-color:rgba(255,255,255,.15);
+  color:var(--dim);
+}
+
+/* QR في غرفة الانتظار — ظاهر دائماً للمضيف */
+.wait-qr-wrap {
+  margin:10px 0; padding:12px; text-align:center;
+  background:rgba(245,200,66,.07); border:1.5px solid rgba(245,200,66,.25);
+  border-radius:13px;
+}
+.wait-qr-title {
+  font-size:10px; font-weight:800; color:var(--gold);
+  letter-spacing:2px; margin-bottom:8px; text-transform:uppercase;
+}
 @keyframes flashin { from{transform:scale(.82);opacity:0} to{transform:scale(1);opacity:1} }
 .ogplist-hdr {
   font-size:9px; font-weight:800; letter-spacing:3px;
@@ -716,17 +782,593 @@ footer b { color:rgba(245,200,66,.48) }
   .ssp { width:160px }
   .set-card { padding:14px 14px }
 }
+
+/* ════════════════════════════════════════════════════════
+   🌟 LANDING PAGE
+   ════════════════════════════════════════════════════════ */
+#s-landing {
+  background: var(--bg);
+  align-items:center; justify-content:center;
+  overflow-y:auto; position:relative;
+  min-height:100vh;
+}
+/* خلفية متحركة */
+.lp-bg {
+  position:absolute; inset:0; overflow:hidden; z-index:0;
+  pointer-events:none;
+}
+.lp-orb {
+  position:absolute; border-radius:50%;
+  filter:blur(80px); opacity:.55;
+  animation: orbFloat 8s ease-in-out infinite;
+}
+.lp-orb.o1 { width:500px;height:500px;background:radial-gradient(circle,#7c3aed,transparent); top:-10%;right:-8%;animation-delay:0s }
+.lp-orb.o2 { width:400px;height:400px;background:radial-gradient(circle,#1c72ee,transparent); bottom:-5%;left:-5%;animation-delay:-3s }
+.lp-orb.o3 { width:300px;height:300px;background:radial-gradient(circle,#f5c842,transparent); top:40%;left:30%;opacity:.25;animation-delay:-5s }
+@keyframes orbFloat {
+  0%,100% { transform:translate(0,0) scale(1) }
+  33%      { transform:translate(30px,-20px) scale(1.05) }
+  66%      { transform:translate(-20px,15px) scale(.97) }
+}
+/* شبكة هكساغونات زخرفية */
+.lp-hex-deco {
+  position:absolute; inset:0; z-index:0; pointer-events:none;
+  overflow:hidden; opacity:.07;
+}
+.lp-hex-deco svg { width:100%; height:100%; }
+
+/* محتوى Landing */
+.lp-content {
+  position:relative; z-index:2;
+  display:flex; flex-direction:column; align-items:center;
+  gap:clamp(8px,1.5vh,18px); text-align:center; 
+  padding:clamp(16px,3vh,32px) 16px;
+  max-width:600px; width:100%;
+}
+
+/* شعار ضخم */
+.lp-logo {
+  font-size:clamp(80px,14vw,148px); font-weight:900; line-height:1.15;
+  letter-spacing:2px; padding-bottom:4px;
+  font-family: 'Tajawal', 'Cairo', sans-serif;
+  background: linear-gradient(140deg,#ffffff 0%,#f5c842 40%,#c084fc 75%,#7c3aed 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter: drop-shadow(0 6px 32px rgba(245,200,66,.5));
+  animation: logoReveal 1s cubic-bezier(.34,1.56,.64,1) forwards;
+  opacity:0;
+}
+@keyframes logoReveal {
+  from { opacity:0; transform:scale(.7) translateY(30px) rotate(-3deg) }
+  to   { opacity:1; transform:scale(1) translateY(0) rotate(0) }
+}
+
+/* شعار انجليزي صغير */
+.lp-subtitle {
+  font-size:12px; font-weight:700; letter-spacing:7px; text-transform:uppercase;
+  color: var(--gold); opacity:0;
+  animation: fadeUp .7s ease .5s forwards;
+}
+
+/* وصف اللعبة */
+.lp-desc {
+  font-size:clamp(14px,2vw,17px); font-weight:600; line-height:1.7;
+  color: var(--text2); max-width:440px;
+  opacity:0; animation: fadeUp .7s ease .7s forwards;
+}
+
+/* بطاقات ميزات */
+.lp-features {
+  display:flex; gap:9px; flex-wrap:wrap; justify-content:center;
+  opacity:0; animation: fadeUp .7s ease .9s forwards;
+}
+.lp-feat {
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px; border-radius:50px;
+  background:var(--panel); border:1px solid var(--bdr);
+  font-size:12px; font-weight:700; color:var(--text2);
+  backdrop-filter:blur(10px);
+  transition: transform .2s, border-color .2s;
+}
+.lp-feat:hover { transform:translateY(-2px); border-color:var(--gold) }
+.lp-feat-icon { font-size:15px }
+
+/* أزرار البدء */
+.lp-btns {
+  display:flex; flex-direction:column; gap:9px; width:100%; max-width:340px;
+  opacity:0; animation: fadeUp .7s ease 1.1s forwards;
+  margin-top:4px;
+}
+.lp-btn-main {
+  padding:15px 32px; border-radius:15px; border:none; cursor:pointer;
+  font-family:'Cairo',sans-serif; font-size:18px; font-weight:900;
+  background: linear-gradient(135deg,#7c3aed,#5b21b6);
+  color:#fff; letter-spacing:1px;
+  box-shadow: 0 6px 30px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.15);
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+  position:relative; overflow:hidden;
+}
+.lp-btn-main::before {
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.15),transparent);
+  opacity:0; transition:.25s;
+}
+.lp-btn-main:hover { transform:translateY(-3px) scale(1.02); box-shadow:0 10px 40px rgba(124,58,237,.7); }
+.lp-btn-main:hover::before { opacity:1 }
+.lp-btn-main:active { transform:scale(.98) }
+
+.lp-btn-sec {
+  padding:11px 24px; border-radius:12px; cursor:pointer;
+  font-family:'Cairo',sans-serif; font-size:14px; font-weight:700;
+  background:transparent;
+  border:1.5px solid var(--bdr); color:var(--text2);
+  transition: all .2s; backdrop-filter:blur(6px);
+}
+.lp-btn-sec:hover { border-color:var(--gold); color:var(--gold); background:rgba(245,200,66,.06) }
+
+/* هكساغونات عائمة صغيرة */
+.lp-hex-float {
+  position:absolute; opacity:0;
+  pointer-events:none; z-index:1;
+  font-size:clamp(18px,3vw,32px); font-weight:900;
+  color:var(--gold);
+  animation: hexFly 12s ease-in-out infinite;
+}
+@keyframes hexFly {
+  0%   { opacity:0; transform:translateY(0) rotate(0deg) scale(.5) }
+  10%  { opacity:.4 }
+  90%  { opacity:.4 }
+  100% { opacity:0; transform:translateY(-120vh) rotate(720deg) scale(.3) }
+}
+
+/* زر الوضع الفاتح/الداكن */
+.theme-toggle {
+  position:absolute; top:14px; left:14px; z-index:10;
+  width:42px; height:42px; border-radius:12px;
+  background:var(--panel); border:1px solid var(--bdr);
+  color:var(--text); font-size:18px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .25s; backdrop-filter:blur(10px);
+}
+.theme-toggle:hover { border-color:var(--gold); transform:scale(1.1) rotate(15deg) }
+
+/* شريط إصدار */
+.lp-version {
+  position:absolute; bottom:14px;
+  font-size:10px; color:var(--dim); letter-spacing:3px; text-transform:uppercase;
+  font-weight:700;
+}
+
+/* شارة الإصدار */
+.lp-badge {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:5px 14px; border-radius:50px;
+  background:linear-gradient(135deg,rgba(124,58,237,.25),rgba(245,200,66,.15));
+  border:1px solid rgba(245,200,66,.35);
+  font-size:11px; font-weight:800; color:var(--gold);
+  letter-spacing:1px;
+  opacity:0; animation: fadeUp .5s ease .2s forwards;
+}
+
+/* إحصائيات */
+.lp-stats {
+  display:flex; align-items:center; gap:20px;
+  padding:14px 28px; border-radius:20px;
+  background:var(--panel); border:1px solid var(--bdr);
+  backdrop-filter:blur(12px);
+  opacity:0; animation: fadeUp .7s ease .75s forwards;
+}
+.lp-stat { text-align:center }
+.lp-stat-num {
+  font-size:26px; font-weight:900; line-height:1;
+  background:linear-gradient(135deg,var(--gold),var(--gold2));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+}
+.lp-stat-lbl { font-size:10px; color:var(--dim); font-weight:700; margin-top:2px }
+.lp-stat-div {
+  width:1px; height:36px;
+  background:var(--bdr);
+}
+
+/* صف الأزرار الثانوية */
+.lp-btns-row {
+  display:flex; gap:8px;
+}
+.lp-btns-row .lp-btn-sec { flex:1 }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px) }
+  to   { opacity:1; transform:translateY(0) }
+}
+
+/* ════ تحسينات الشاشة الفاتحة ════ */
+[data-theme="light"] #s-landing {
+  background: linear-gradient(160deg, #e8e0ff 0%, #f5f0ff 50%, #fff5e8 100%);
+}
+[data-theme="light"] .lp-orb.o1 { opacity:.25 }
+[data-theme="light"] .lp-orb.o2 { opacity:.2 }
+[data-theme="light"] .lp-orb.o3 { opacity:.15 }
+[data-theme="light"] .lp-hex-deco { opacity:.04 }
+[data-theme="light"] .lp-logo {
+  background: linear-gradient(140deg,#4c1d95 0%,#c89a00 40%,#9333ea 80%);
+  -webkit-background-clip:text; background-clip:text;
+  filter: drop-shadow(0 4px 20px rgba(100,60,200,.3));
+}
+
+/* ════════════════════════════════════════════════════════
+   ✨ ENHANCED ANIMATIONS
+   ════════════════════════════════════════════════════════ */
+
+/* تحسين انتقال الشاشات */
+.scr { transition: opacity .3s ease }
+@keyframes scrIn {
+  0%   { opacity:0; transform:scale(1.03) translateY(10px); filter:blur(4px) }
+  60%  { filter:blur(0) }
+  100% { opacity:1; transform:scale(1) translateY(0); filter:blur(0) }
+}
+@keyframes scrOut {
+  from { opacity:1; transform:scale(1) }
+  to   { opacity:0; transform:scale(.97) }
+}
+
+/* خلايا الشبكة */
+@keyframes hexIn {
+  0%   { opacity:0; transform:scale(.5) rotate(-15deg) }
+  70%  { transform:scale(1.08) rotate(3deg) }
+  100% { opacity:1; transform:scale(1) rotate(0) }
+}
+@keyframes hexWin {
+  0%   { transform:scale(1) }
+  30%  { transform:scale(1.25) rotate(5deg) }
+  60%  { transform:scale(.95) rotate(-3deg) }
+  100% { transform:scale(1) rotate(0) }
+}
+@keyframes hexClaim {
+  0%   { transform:scale(1) }
+  20%  { transform:scale(1.15) }
+  40%  { transform:scale(.92) }
+  70%  { transform:scale(1.06) }
+  100% { transform:scale(1) }
+}
+polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
+
+/* بطاقة السؤال */
+@keyframes qCardIn {
+  from { opacity:0; transform:translateY(12px) scale(.97) }
+  to   { opacity:1; transform:translateY(0) scale(1) }
+}
+.qcard { animation: qCardIn .35s cubic-bezier(.34,1.56,.64,1) }
+
+/* بطاقة الفائز / Flash */
+@keyframes flashIn {
+  0%   { opacity:0; transform:scale(.85) translateY(8px) }
+  60%  { transform:scale(1.04) }
+  100% { opacity:1; transform:scale(1) translateY(0) }
+}
+@keyframes flashOut {
+  from { opacity:1; transform:translateY(0) }
+  to   { opacity:0; transform:translateY(-10px) }
+}
+
+/* نبضة للخلية النشطة */
+@keyframes activePulse {
+  0%,100% { filter:drop-shadow(0 0 8px var(--gold)) brightness(1.05) }
+  50%      { filter:drop-shadow(0 0 22px var(--gold)) brightness(1.2) }
+}
+.hex-active polygon { animation: activePulse 1.5s ease infinite !important }
+
+/* نجوم الصعوبة */
+@keyframes starPop {
+  from { transform:scale(0) rotate(-30deg) }
+  to   { transform:scale(1) rotate(0) }
+}
+.qdif span {
+  display:inline-block;
+  animation: starPop .3s cubic-bezier(.34,1.56,.64,1) backwards;
+}
+.qdif span:nth-child(1) { animation-delay:.05s }
+.qdif span:nth-child(2) { animation-delay:.1s }
+.qdif span:nth-child(3) { animation-delay:.15s }
+
+/* تحسين زر الحكم */
+.jbt { transition: all .2s cubic-bezier(.34,1.56,.64,1) }
+.jbt:not([disabled]):hover { transform:scale(1.06) translateY(-2px) }
+.jbt:not([disabled]):active { transform:scale(.95) }
+
+/* تحسين النتيجة */
+@keyframes scoreUp {
+  0%   { transform:scale(1) }
+  40%  { transform:scale(1.4) translateY(-4px) }
+  100% { transform:scale(1) }
+}
+.scn.updated { animation: scoreUp .5s cubic-bezier(.34,1.56,.64,1) }
+
+/* ════ LIGHT MODE adjustments ════ */
+[data-theme="light"] body { background:var(--bg) }
+[data-theme="light"] .hdr { 
+  background:rgba(255,255,255,.85); 
+  border-bottom:1px solid var(--bdr);
+  box-shadow: 0 2px 20px var(--shadow);
+}
+[data-theme="light"] .rpanel,
+[data-theme="light"] .ogpanel { 
+  background:rgba(255,255,255,.88);
+  border-left: 1px solid var(--bdr);
+}
+[data-theme="light"] .qcard, 
+[data-theme="light"] .ogqbox {
+  background:rgba(255,255,255,.95);
+  border-color:var(--bdr);
+  box-shadow: 0 4px 24px var(--shadow);
+}
+[data-theme="light"] .qtxt,
+[data-theme="light"] .ogqtxt { color:var(--text) }
+[data-theme="light"] .set-card {
+  background:rgba(255,255,255,.9);
+  border-color:var(--bdr);
+  box-shadow: 0 8px 40px var(--shadow);
+}
+[data-theme="light"] .set-logo {
+  background: linear-gradient(140deg,#4c1d95 0%,#c89a00 40%,#9333ea 80%);
+  -webkit-background-clip:text; background-clip:text;
+  filter: drop-shadow(0 4px 20px rgba(100,60,200,.25));
+}
+[data-theme="light"] .set-input {
+  background: rgba(0,0,0,.05);
+  color: var(--text);
+  border-color: var(--bdr);
+}
+[data-theme="light"] #s-settings {
+  background: linear-gradient(160deg, #ede8ff 0%, #f8f5ff 60%, #fff5e8 100%);
+}
+[data-theme="light"] footer { color:var(--dim) }
+[data-theme="light"] .hex-text { fill:#1a0845 !important }
+
+/* زر theme toggle في كل الشاشات */
+.theme-toggle {
+  position:fixed; bottom:16px; left:16px; z-index:9999;
+  width:38px; height:38px; border-radius:10px;
+  background:var(--panel); border:1px solid var(--bdr);
+  color:var(--text); font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition: all .25s; backdrop-filter:blur(10px);
+  box-shadow: 0 4px 20px var(--shadow);
+}
+.theme-toggle:hover { 
+  border-color:var(--gold); 
+  transform:scale(1.15) rotate(20deg);
+  box-shadow: 0 6px 24px rgba(245,200,66,.3);
+}
+
+/* ════ GLOBAL LIGHT MODE OVERRIDES ════ */
+[data-theme="light"] .scr { background:var(--bg) }
+[data-theme="light"] .hdr {
+  background: rgba(255,255,255,.88) !important;
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--bdr) !important;
+}
+[data-theme="light"] .hlogo { color:var(--text) }
+[data-theme="light"] .sc { color:var(--text2) }
+[data-theme="light"] .scn { color:var(--text) }
+[data-theme="light"] .rpanel,
+[data-theme="light"] .ogpanel {
+  background: rgba(255,255,255,.9) !important;
+  border-color: var(--bdr) !important;
+}
+[data-theme="light"] .rpl,
+[data-theme="light"] .rps { color: var(--text) }
+[data-theme="light"] .stxt,
+[data-theme="light"] .nosel { color: var(--dim) }
+[data-theme="light"] .qcard {
+  background: rgba(255,255,255,.95) !important;
+  box-shadow: 0 6px 30px var(--shadow) !important;
+}
+[data-theme="light"] .qtxt { color: var(--text) !important }
+[data-theme="light"] .ansl { color: var(--dim) }
+[data-theme="light"] .ansv { color: var(--text) }
+[data-theme="light"] .jbw {
+  background: rgba(239,68,68,.12) !important;
+  color: #b91c1c !important;
+  border-color: rgba(239,68,68,.3) !important;
+}
+[data-theme="light"] .set-card {
+  background: rgba(255,255,255,.92) !important;
+  box-shadow: 0 12px 50px rgba(100,60,200,.15) !important;
+}
+[data-theme="light"] .radio-btn { 
+  background:rgba(0,0,0,.05); 
+  color:var(--text); 
+  border:1.5px solid var(--bdr) 
+}
+[data-theme="light"] .radio-btn.active { 
+  background:var(--t1); 
+  color:#fff; 
+  border-color:var(--t1) 
+}
+[data-theme="light"] footer { 
+  color: var(--dim) !important;
+  background: transparent !important;
+  border-top: 1px solid var(--bdr);
+}
+[data-theme="light"] .darr { color: var(--text2) }
+[data-theme="light"] .ogqtxt { color: var(--text) !important }
+[data-theme="light"] .ogqbox { 
+  background:rgba(255,255,255,.92) !important;
+  border-color:var(--bdr) !important;
+}
+[data-theme="light"] .oginput { 
+  background:rgba(0,0,0,.05) !important;
+  color:var(--text) !important;
+  border-color:var(--bdr) !important;
+}
+[data-theme="light"] .oginput:focus { border-color:var(--gold) !important }
+[data-theme="light"] .ogplist-hdr { color:var(--dim) }
+[data-theme="light"] .prow { color:var(--text2) }
+[data-theme="light"] #sd { 
+  background: linear-gradient(160deg,#e8e0ff,#f5f0ff) !important;
+}
+[data-theme="light"] .sd-card { 
+  background:rgba(255,255,255,.88) !important;
+}
+
+/* تحريك الشبكة الخلفية في Landing */
+.lp-hex-deco svg { animation: hexDrift 40s linear infinite }
+@keyframes hexDrift {
+  from { transform: translate(0,0) }
+  to   { transform: translate(-70px,-80px) }
+}
+
+/* تحسين بطاقات الميزات في Landing */
+.lp-features { margin-top:4px; margin-bottom:4px }
+.lp-feat {
+  transition: all .25s cubic-bezier(.34,1.56,.64,1);
+  animation: fadeUp .5s ease backwards;
+}
+.lp-feat:nth-child(1) { animation-delay:1.0s }
+.lp-feat:nth-child(2) { animation-delay:1.1s }
+.lp-feat:nth-child(3) { animation-delay:1.2s }
+.lp-feat:nth-child(4) { animation-delay:1.3s }
+.lp-feat:nth-child(5) { animation-delay:1.4s }
+
+/* تحسين زر البدء */
+.lp-btn-main {
+  letter-spacing:.5px;
+  animation: none;
+}
+
+/* نبضة على زر البدء */
+@keyframes ctaPulse {
+  0%,100% { box-shadow: 0 6px 30px rgba(124,58,237,.5), inset 0 1px 0 rgba(255,255,255,.15) }
+  50%      { box-shadow: 0 6px 50px rgba(124,58,237,.8), 0 0 0 8px rgba(124,58,237,.1), inset 0 1px 0 rgba(255,255,255,.15) }
+}
+.lp-btn-main { animation: ctaPulse 2.5s ease 1.5s infinite }
+.lp-btn-main:hover { animation: none }
+
+/* تحسين صغير — الشاشة الفاتحة */
+[data-theme="light"] .lp-subtitle { color: #7c3aed }
+[data-theme="light"] .lp-badge { 
+  background: linear-gradient(135deg,rgba(100,60,200,.15),rgba(180,140,0,.1));
+  border-color: rgba(130,90,0,.3);
+  color: #6b4a00;
+}
+[data-theme="light"] .lp-stats {
+  background: rgba(255,255,255,.8);
+  border-color: rgba(100,60,200,.2);
+  box-shadow: 0 4px 20px rgba(100,60,200,.1);
+}
+[data-theme="light"] .lp-stat-num {
+  background: linear-gradient(135deg,#8b5e00,#5c3aaa);
+  -webkit-background-clip:text; background-clip:text;
+}
+[data-theme="light"] .lp-stat-lbl { color: #6b4a95 }
+[data-theme="light"] .lp-stat-div { background: rgba(100,60,200,.2) }
+[data-theme="light"] .lp-feat {
+  background: rgba(255,255,255,.8);
+  border-color: rgba(100,60,200,.15);
+  color: #1a0845;
+}
+[data-theme="light"] .lp-btn-sec { color:#4c1d95; border-color:rgba(100,60,200,.3) }
+[data-theme="light"] .lp-btn-sec:hover { background:rgba(100,60,200,.08); border-color:#7c3aed; color:#7c3aed }
+[data-theme="light"] .lp-hex-float { color:#7c3aed }
+[data-theme="light"] .lp-version { color:#7c3aed; opacity:.5 }
 </style>
 </head>
 <body>
+<!-- زر الوضع الفاتح/الداكن — ثابت في كل الشاشات -->
+<button class="theme-toggle" id="global-theme-btn" onclick="toggleTheme()" title="تغيير المظهر">🌙</button>
+
 <div id="cfw"></div>
 <div id="tw"></div>
 
 <!-- ════════════════════════════════════════════════════════
      شاشة الإعدادات (Settings Screen)
      ════════════════════════════════════════════════════════ -->
-<div id="s-settings" class="scr on">
-  <div class="set-logo">جوابك</div>
+<!-- ════════════════════════════════════════════════════════
+     🌟 LANDING PAGE — الشاشة الترحيبية
+     ════════════════════════════════════════════════════════ -->
+<div id="s-landing" class="scr on">
+  <!-- خلفية متحركة -->
+  <div class="lp-bg">
+    <div class="lp-orb o1"></div>
+    <div class="lp-orb o2"></div>
+    <div class="lp-orb o3"></div>
+    <!-- شبكة هكساغونات -->
+    <div class="lp-hex-deco">
+      <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs><pattern id="hxp" x="0" y="0" width="70" height="80" patternUnits="userSpaceOnUse">
+          <polygon points="35,2 65,18 65,52 35,68 5,52 5,18" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </pattern></defs>
+        <rect width="100%" height="100%" fill="url(#hxp)" style="color:#7c3aed"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- حروف عائمة زخرفية -->
+  <div class="lp-hex-float" style="right:8%;top:15%;animation-delay:0s;animation-duration:14s">ج</div>
+  <div class="lp-hex-float" style="right:20%;top:60%;animation-delay:-4s;animation-duration:11s;font-size:20px">ع</div>
+  <div class="lp-hex-float" style="left:10%;top:25%;animation-delay:-7s;animation-duration:16s">ب</div>
+  <div class="lp-hex-float" style="left:25%;top:70%;animation-delay:-2s;animation-duration:13s;font-size:22px">ق</div>
+  <div class="lp-hex-float" style="right:35%;top:10%;animation-delay:-9s;animation-duration:12s;font-size:18px">ر</div>
+  <div class="lp-hex-float" style="left:40%;top:80%;animation-delay:-5s;animation-duration:15s">م</div>
+
+  <!-- المحتوى الرئيسي -->
+  <div class="lp-content">
+    <!-- شارة الإصدار -->
+    <div class="lp-badge">✨ الإصدار التاسع</div>
+
+    <div class="lp-logo">جوابك</div>
+    <div class="lp-subtitle">JAWABAK — ARABIC QUIZ GAME</div>
+    <div class="lp-desc">
+      لعبة ثقافية استراتيجية — احتلّ خلايا الشبكة بإجاباتك الصحيحة<br>
+      وقطع طريق خصمك قبل أن يصل!
+    </div>
+
+    <!-- إحصائيات -->
+    <div class="lp-stats">
+      <div class="lp-stat">
+        <div class="lp-stat-num">750+</div>
+        <div class="lp-stat-lbl">سؤال</div>
+      </div>
+      <div class="lp-stat-div"></div>
+      <div class="lp-stat">
+        <div class="lp-stat-num">28</div>
+        <div class="lp-stat-lbl">حرف عربي</div>
+      </div>
+      <div class="lp-stat-div"></div>
+      <div class="lp-stat">
+        <div class="lp-stat-num">3</div>
+        <div class="lp-stat-lbl">مستويات صعوبة</div>
+      </div>
+    </div>
+
+    <!-- بطاقات الميزات -->
+    <div class="lp-features">
+      <div class="lp-feat"><span class="lp-feat-icon">🧠</span> ثقافة عامة وجغرافيا</div>
+      <div class="lp-feat"><span class="lp-feat-icon">🌐</span> لعب أونلاين</div>
+      <div class="lp-feat"><span class="lp-feat-icon">📺</span> شاشة عرض</div>
+      <div class="lp-feat"><span class="lp-feat-icon">⚡</span> استراتيجي سريع</div>
+      <div class="lp-feat"><span class="lp-feat-icon">🎨</span> ثيمات متعددة</div>
+    </div>
+
+    <!-- أزرار -->
+    <div class="lp-btns">
+      <button class="lp-btn-main" onclick="goFromLanding()">
+        🎮 ابدأ اللعبة الآن
+      </button>
+      <div class="lp-btns-row">
+        <button class="lp-btn-sec" onclick="show('sol')">🌐 أونلاين</button>
+        <button class="lp-btn-sec" onclick="startGame('self')">🕹️ بدون مقدم</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- زر الوضع -->
+  <button class="theme-toggle" id="lp-theme-btn" onclick="toggleTheme()" title="تغيير المظهر">🌙</button>
+
+  <div class="lp-version">v9 • جوابك</div>
+</div>
+
+<div id="s-settings" class="scr">
+  <div class="set-logo" style="cursor:pointer" onclick="show('s-landing')" title="العودة للرئيسية">جوابك</div>
 
   <div class="set-card">
     <!-- اسم المسابقة -->
@@ -800,7 +1442,7 @@ footer b { color:rgba(245,200,66,.48) }
       </div>
     </div>
   </div>
-  <footer><b>جوابك v7</b> &nbsp;•&nbsp; <b>حروف، تنافس، إبداع</b></footer>
+  <footer><b>جوابك v9</b> &nbsp;•&nbsp; <b>حروف، تنافس، إبداع</b> &nbsp;•&nbsp; <span style="cursor:pointer;opacity:.7" onclick="show('s-landing')">← الرئيسية</span></footer>
 </div>
 
 <!-- ════════════════════════════════════════════════════════
@@ -867,7 +1509,7 @@ footer b { color:rgba(245,200,66,.48) }
       <div class="rps"><div class="rpl">الحالة</div><div class="stxt" id="hpst">اختر خلية لبدء اللعب</div></div>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ شاشة العرض ════ -->
@@ -893,7 +1535,7 @@ footer b { color:rgba(245,200,66,.48) }
     </div>
   </div>
   <div class="dal" id="dal"><div class="dal-l">الحرف المطلوب</div><div class="dal-c" id="dalc">—</div></div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ اللعب الثنائي ════ -->
@@ -985,7 +1627,7 @@ footer b { color:rgba(245,200,66,.48) }
       <div id="sd-qr-lbl" style="font-size:11px;color:var(--dim);margin-top:6px"></div>
     </div>
   </div>
-  <footer><b>جوابك v7</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ اللوبي الأونلاين ════ -->
@@ -1026,31 +1668,37 @@ footer b { color:rgba(245,200,66,.48) }
       <div class="olst" id="ol-jst"></div>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ غرفة الانتظار ════ -->
 <div id="sowait" class="scr">
   <div class="hdr">
     <div class="hlogo">انتظار اللاعبين 🕐</div>
-    <div class="hbts"><button class="hbt" onclick="olLeave()">🚪 خروج</button></div>
+    <div class="hbts">
+      <button class="hbt" id="btn-disp-wait" onclick="goDispOnline()" style="display:none">📺 شاشة العرض</button>
+      <button class="hbt" onclick="olLeave()">🚪 خروج</button>
+    </div>
   </div>
   <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:20px">
     <div class="olcard" style="width:min(500px,95vw)">
       <div style="text-align:center;margin-bottom:14px">
         <div style="font-size:11px;color:var(--dim);margin-bottom:5px">شارك هذا الكود مع أصدقائك</div>
         <div class="olcode" id="room-code">-------</div>
-        <!-- QR Code -->
-        <div class="qr-wrap">
-          <img id="qr-img" src="" alt="QR Code" width="120" height="120" style="display:none">
-          <div class="qr-label" id="qr-label"></div>
+        <div class="qr-label" id="qr-label" style="font-size:11px;color:var(--dim);margin-bottom:6px"></div>
+        <!-- QR للاعبين -->
+        <div class="wait-qr-wrap" id="wait-qr-wrap">
+          <div class="wait-qr-title">📱 امسح للانضمام</div>
+          <img id="qr-img" src="" alt="QR" width="130" height="130"
+            style="border-radius:10px;border:2px solid rgba(245,200,66,.4);display:none;margin:0 auto">
+          <div style="font-size:10px;color:var(--dim);margin-top:6px" id="qr-join-url"></div>
         </div>
       </div>
       <div class="pslots" id="pslots"></div>
       <button class="olstart" id="olstart-btn" onclick="olStartGame()" disabled>⏳ في انتظار اللاعبين (1/4)</button>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ اللعبة الأونلاين ════ -->
@@ -1061,7 +1709,10 @@ footer b { color:rgba(245,200,66,.48) }
       <div class="sc sc-1"><span id="og-nr">الفريق 1</span><span class="scn" id="og-sr">0</span></div>
       <div class="sc sc-2"><span class="scn" id="og-sb">0</span><span id="og-nb">الفريق 2</span></div>
     </div>
-    <div class="hbts"><button class="hbt" onclick="olLeave()">🚪 خروج</button></div>
+    <div class="hbts">
+      <button class="hbt" id="og-disp-btn" onclick="goDispOnline()" style="display:none">📺</button>
+      <button class="hbt" onclick="olLeave()">🚪 خروج</button>
+    </div>
   </div>
   <div class="ogbody">
     <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:14px;overflow:hidden">
@@ -1080,15 +1731,18 @@ footer b { color:rgba(245,200,66,.48) }
         <div class="ogqltr" id="og-ltr"></div>
       </div>
       <div id="og-ans-area" style="display:none">
-        <input class="oginput" id="og-ai" placeholder="اكتب جوابك هنا..." autocomplete="off" oninput="olCheckAnswer(this.value)">
+        <input class="oginput" id="og-ai" placeholder="اكتب جوابك هنا..." autocomplete="off" 
+  oninput="olCheckAnswer(this.value)"
+  onkeydown="if(event.key==='Enter')olCheckAnswer(this.value)">
         <div class="ogspeed">⚡ أسرع واحد يكتب الجواب الصح يفوز بالخلية</div>
       </div>
+      <div id="og-turn-box" class="og-turn-box" style="display:none"></div>
       <div class="ogflash" id="og-flash"></div>
       <div class="ogplist-hdr">اللاعبون</div>
       <div id="og-plist"></div>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <!-- ════ شاشة الفوز ════ -->
@@ -1104,12 +1758,29 @@ footer b { color:rgba(245,200,66,.48) }
       <button class="wbtn wbtn2" onclick="show('s-settings')">🏠 الرئيسية</button>
     </div>
   </div>
-  <footer><b>جوابك v6</b></footer>
+  <footer><b>جوابك v9</b></footer>
 </div>
 
 <script>
 /* ════════════════════════════════════════════════════════
-   Firebase Configuration — جوابك v7
+   Auto-join من QR رابط
+   ════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', ()=>{
+  const params = new URLSearchParams(location.search);
+  const roomCode = params.get('room');
+  if(roomCode && roomCode.length===7) {
+    // أدخل الكود تلقائياً وانتقل لصفحة الانضمام
+    setTimeout(()=>{
+      show('sol');
+      const jcode = document.getElementById('ol-jcode');
+      if(jcode) { jcode.value = roomCode; olTab('j'); }
+      toast(`📱 تم اكتشاف غرفة ${roomCode} — اختر اسمك وفريقك`);
+    }, 500);
+  }
+});
+
+/* ════════════════════════════════════════════════════════
+   Firebase Configuration — جوابك v8
    ════════════════════════════════════════════════════════
    خطوات إعداد Firebase:
    1. اذهب إلى: https://console.firebase.google.com
@@ -1187,7 +1858,7 @@ function buildSettingsUI() {
     sw.addEventListener('click', () => {
       document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('selected'));
       sw.classList.add('selected');
-      applyTheme(i);
+      applyColorTheme(i);
     });
     cg.appendChild(sw);
   });
@@ -1208,8 +1879,8 @@ function setupRadioGroup(groupId, obj, prop) {
   });
 }
 
-/* تطبيق الثيم على متغيرات CSS */
-function applyTheme(idx) {
+/* تطبيق ألوان الفريقين */
+function applyColorTheme(idx) {
   currentTheme = idx;
   const th = THEMES[idx];
   const r = document.documentElement.style;
@@ -1545,6 +2216,409 @@ const QDB = [
 {l:'و',d:'سهل',q:'ما هي عاصمة بولندا؟',a:'وارسو',h:'على نهر فيستولا'},
 {l:'و',d:'متوسط',q:'ما وحدة قياس الشغل في النظام الدولي؟',a:'وحدة الجول',h:'سُمّيت بعالم إنجليزي'},
 {l:'و',d:'سهل',q:'ما وظيفة الصفائح الدموية في الجسم؟',a:'وقف النزيف وتجلط الدم',h:'تمنع النزيف'},
+
+/* ════ أسئلة إضافية ════ */
+/* أ */
+{l:'أ',d:'سهل',q:'ما هي عاصمة الأردن؟',a:'عمان',h:'مدينة الأمويين'},
+{l:'أ',d:'سهل',q:'كم عدد ساعات اليوم؟',a:'أربعة وعشرون',h:'24 ساعة'},
+{l:'أ',d:'متوسط',q:'ما هو الاسم العلمي للملح؟',a:'كلوريد الصوديوم',h:'NaCl'},
+{l:'أ',d:'سهل',q:'ما هي اللغة الأكثر انتشاراً؟',a:'الإنجليزية',h:'لغة العلوم'},
+{l:'أ',d:'صعب',q:'من هو مؤسس شركة أبل؟',a:'ستيف جوبز',h:'توفي 2011'},
+{l:'أ',d:'سهل',q:'ما هو الحيوان الأطول عنقاً؟',a:'الزرافة',h:'يصل 6 أمتار'},
+{l:'أ',d:'متوسط',q:'في أي عام أُسست الأمم المتحدة؟',a:'1945',h:'بعد الحرب العالمية'},
+{l:'أ',d:'سهل',q:'ما هو الكوكب الأكبر في المجموعة الشمسية؟',a:'المشتري',h:'Jupiter'},
+{l:'أ',d:'صعب',q:'ما هي أول امرأة فازت بنوبل؟',a:'ماري كوري',h:'فازت بها مرتين'},
+{l:'أ',d:'متوسط',q:'ما اسم أشهر ملحمة يونانية؟',a:'الإلياذة',h:'لهوميروس'},
+{l:'أ',d:'سهل',q:'ما عاصمة سلطنة عُمان؟',a:'مسقط',h:'على بحر عُمان'},
+{l:'أ',d:'سهل',q:'ما هو النهر الأطول في العالم؟',a:'النيل',h:'يمر بمصر'},
+/* ب */
+{l:'ب',d:'سهل',q:'ما هي عاصمة إيطاليا؟',a:'روما',h:'مدينة الكولوسيوم'},
+{l:'ب',d:'متوسط',q:'ما اسم أكبر صحراء في العالم؟',a:'الصحراء الكبرى',h:'في أفريقيا'},
+{l:'ب',d:'سهل',q:'ما هو أضخم حيوان بحري؟',a:'الحوت الأزرق',h:'يزن 150 طن'},
+{l:'ب',d:'متوسط',q:'ما البروتين المسؤول عن لون الدم؟',a:'الهيموغلوبين',h:'يحمل الأكسجين'},
+{l:'ب',d:'سهل',q:'كم عدد لاعبي فريق كرة القدم؟',a:'أحد عشر',h:'بما فيهم الحارس'},
+{l:'ب',d:'سهل',q:'ما هي عاصمة تركيا؟',a:'أنقرة',h:'ليست إسطنبول'},
+{l:'ب',d:'صعب',q:'من ألّف رواية بائسون؟',a:'فيكتور هوغو',h:'أديب فرنسي'},
+{l:'ب',d:'سهل',q:'ما هو البلد الأصلي للبيتزا؟',a:'إيطاليا',h:'نابولي تحديداً'},
+{l:'ب',d:'متوسط',q:'ما هو الكوكب الأحمر؟',a:'المريخ',h:'Mars'},
+{l:'ب',d:'سهل',q:'كم عدد أشهر السنة؟',a:'اثنا عشر',h:'12 شهراً'},
+{l:'ب',d:'صعب',q:'ما أصغر دولة في العالم؟',a:'الفاتيكان',h:'داخل روما'},
+/* ت */
+{l:'ت',d:'سهل',q:'ما هي عاصمة تونس؟',a:'تونس',h:'على المتوسط'},
+{l:'ت',d:'متوسط',q:'ما جهاز قياس درجة الحرارة؟',a:'الترمومتر',h:'يستخدم الزئبق'},
+{l:'ت',d:'سهل',q:'من اخترع الهاتف؟',a:'ألكسندر غراهام بيل',h:'عام 1876'},
+{l:'ت',d:'سهل',q:'ما الطائر الذي لا يطير ويعيش بالقطب؟',a:'البطريق',h:'يسبح عوضاً'},
+{l:'ت',d:'متوسط',q:'كم عدد نغمات السلم الموسيقي؟',a:'سبع',h:'دو ري مي فا صول لا سي'},
+{l:'ت',d:'صعب',q:'من رسم لوحة الموناليزا؟',a:'ليوناردو دافنشي',h:'القرن 16'},
+{l:'ت',d:'سهل',q:'ما أكبر محيط في العالم؟',a:'الهادئ',h:'Pacific'},
+{l:'ت',d:'متوسط',q:'ما مادة الماس؟',a:'الكربون',h:'أصلب مادة'},
+{l:'ت',d:'سهل',q:'كم يوم في فبراير العادي؟',a:'ثمانية وعشرون',h:'29 في الكبيسة'},
+{l:'ت',d:'صعب',q:'ما عاصمة كندا؟',a:'أوتاوا',h:'وليست تورنتو'},
+/* ث */
+{l:'ث',d:'سهل',q:'ما أقرب كوكب للشمس؟',a:'عطارد',h:'Mercury'},
+{l:'ث',d:'متوسط',q:'من مؤسس علم الجبر؟',a:'الخوارزمي',h:'عالم عربي'},
+{l:'ث',d:'سهل',q:'الثدييات التي تضع البيض؟',a:'خلد الماء',h:'Platypus'},
+{l:'ث',d:'صعب',q:'ما أطول سور في التاريخ؟',a:'سور الصين العظيم',h:'آلاف الكيلومترات'},
+{l:'ث',d:'سهل',q:'كم دقيقة في الساعة؟',a:'ستون',h:'و3600 ثانية'},
+{l:'ث',d:'متوسط',q:'ثاني أكبر قارة؟',a:'أفريقيا',h:'بعد آسيا'},
+{l:'ث',d:'سهل',q:'نصف القطر بالنسبة للقطر؟',a:'نصفه',h:'r=d/2'},
+/* ج */
+{l:'ج',d:'سهل',q:'ما هي عاصمة مصر؟',a:'القاهرة',h:'أم الدنيا'},
+{l:'ج',d:'متوسط',q:'ما اسم أشهر متحف في العالم؟',a:'اللوفر',h:'في باريس'},
+{l:'ج',d:'سهل',q:'من اخترع المصباح الكهربائي؟',a:'توماس إديسون',h:'عام 1879'},
+{l:'ج',d:'سهل',q:'ما أسرع حيوان بري؟',a:'الفهد',h:'120 كم/ساعة'},
+{l:'ج',d:'متوسط',q:'كم عدد عظام الإنسان البالغ؟',a:'مائتان وستة',h:'206 عظمة'},
+{l:'ج',d:'صعب',q:'متى انتهت الحرب العالمية الأولى؟',a:'1918',h:'11 نوفمبر'},
+{l:'ج',d:'سهل',q:'ما الصخر الذي يطفو على الماء؟',a:'البيومس',h:'بركاني خفيف'},
+{l:'ج',d:'متوسط',q:'ما أكبر غابة مطرية؟',a:'الأمازون',h:'في أمريكا الجنوبية'},
+/* ح */
+{l:'ح',d:'سهل',q:'كم عدد حروف العربية؟',a:'ثمانية وعشرون',h:'من الألف للياء'},
+{l:'ح',d:'صعب',q:'أكثر عنصر في قشرة الأرض؟',a:'الأكسجين',h:'46% من القشرة'},
+{l:'ح',d:'سهل',q:'الكتاب المقدس للمسلمين؟',a:'القرآن الكريم',h:'أُنزل على محمد ﷺ'},
+{l:'ح',d:'متوسط',q:'كم لوناً في قوس قزح؟',a:'سبعة',h:'أحمر برتقالي أصفر أخضر أزرق نيلي بنفسجي'},
+{l:'ح',d:'سهل',q:'الكوكب المعروف بحلقاته؟',a:'زحل',h:'Saturn'},
+{l:'ح',d:'صعب',q:'ما سرعة الضوء تقريباً؟',a:'ثلاثمائة ألف كيلومتر في الثانية',h:'299,792 km/s'},
+{l:'ح',d:'سهل',q:'من كتب مسرحية هاملت؟',a:'شكسبير',h:'مسرحية انتقام'},
+{l:'ح',d:'متوسط',q:'من حُكم عليه بشرب السم؟',a:'سقراط',h:'معلم أفلاطون'},
+{l:'ح',d:'سهل',q:'ما ديانة غالبية الهنود؟',a:'الهندوسية',h:'أقدم الديانات'},
+/* خ */
+{l:'خ',d:'سهل',q:'ما هي عاصمة اليمن؟',a:'صنعاء',h:'أقدم مدن العالم'},
+{l:'خ',d:'متوسط',q:'أول قمر اصطناعي في الفضاء؟',a:'سبوتنيك',h:'السوفييت 1957'},
+{l:'خ',d:'سهل',q:'أخف غاز في الكون؟',a:'الهيدروجين',h:'H'},
+{l:'خ',d:'صعب',q:'الخلايا التي تنقل الأكسجين في الدم؟',a:'خلايا الدم الحمراء',h:'كريات حمراء'},
+{l:'خ',d:'سهل',q:'كم عدد أصابع اليد؟',a:'خمسة',h:'إبهام وسبابة ووسطى وبنصر وخنصر'},
+{l:'خ',d:'متوسط',q:'من بنى الأهرامات؟',a:'الفراعنة',h:'قدماء المصريين'},
+{l:'خ',d:'سهل',q:'اللغة الرسمية للبرازيل؟',a:'البرتغالية',h:'وليست الإسبانية'},
+{l:'خ',d:'متوسط',q:'أكبر عضو في الجسم؟',a:'الجلد',h:'يغطي كل الجسم'},
+/* د */
+{l:'د',d:'سهل',q:'ما هي عاصمة الكويت؟',a:'الكويت',h:'دولة خليجية'},
+{l:'د',d:'متوسط',q:'من اخترع نظرية النسبية؟',a:'أينشتاين',h:'فيزيائي ألماني'},
+{l:'د',d:'سهل',q:'أكثر حيوانات قتلاً للبشر؟',a:'البعوض',h:'ينقل الملاريا'},
+{l:'د',d:'سهل',q:'جهاز تحويل الطاقة الشمسية؟',a:'الألواح الشمسية',h:'Solar panels'},
+{l:'د',d:'متوسط',q:'من كتب دون كيخوته؟',a:'ثيرفانتس',h:'إسباني'},
+{l:'د',d:'سهل',q:'ما دولة برج إيفل؟',a:'فرنسا',h:'باريس'},
+{l:'د',d:'صعب',q:'أقدم لغة مكتوبة في العالم؟',a:'السومرية',h:'بلاد ما بين النهرين'},
+/* ذ */
+{l:'ذ',d:'سهل',q:'صوت الأسد؟',a:'الزئير',h:'صوت مخيف'},
+{l:'ذ',d:'متوسط',q:'ارتفاع برج خليفة بالمتر؟',a:'ثمانمائة وثمانية وعشرون',h:'828m'},
+{l:'ذ',d:'سهل',q:'ملك الغابة؟',a:'الأسد',h:'King of jungle'},
+{l:'ذ',d:'سهل',q:'كم درجة الزاوية القائمة؟',a:'تسعون',h:'90°'},
+{l:'ذ',d:'صعب',q:'ذرة بروتون واحد فقط؟',a:'الهيدروجين',h:'أبسط عنصر'},
+{l:'ذ',d:'متوسط',q:'المثلث ذو الأضلاع المتساوية؟',a:'المتساوي الأضلاع',h:'Equilateral'},
+/* ر */
+{l:'ر',d:'سهل',q:'عاصمة روسيا؟',a:'موسكو',h:'أكبر مدن أوروبا'},
+{l:'ر',d:'متوسط',q:'أشهر ساحة في موسكو؟',a:'الساحة الحمراء',h:'Red Square'},
+{l:'ر',d:'سهل',q:'الكوكب الأزرق؟',a:'الأرض',h:'75% منها ماء'},
+{l:'ر',d:'صعب',q:'M في الأرقام الرومانية؟',a:'ألف',h:'1000'},
+{l:'ر',d:'سهل',q:'مادة تصنيع الزجاج؟',a:'الرمال',h:'مع الصودا'},
+{l:'ر',d:'متوسط',q:'محيط الكرة الأرضية تقريباً؟',a:'أربعون ألف كيلومتر',h:'عند الاستواء'},
+{l:'ر',d:'سهل',q:'أكبر دين في العالم عدداً؟',a:'المسيحية',h:'2.4 مليار'},
+{l:'ر',d:'متوسط',q:'ما هو دوري كرة السلة الأمريكي؟',a:'NBA',h:'Basketball'},
+/* ز */
+{l:'ز',d:'سهل',q:'من اخترع الطباعة؟',a:'جوتنبرغ',h:'القرن 15'},
+{l:'ز',d:'سهل',q:'لون السماء الصافية؟',a:'الأزرق',h:'بسبب التشتت'},
+{l:'ز',d:'متوسط',q:'كم يحتاج الجسم من ماء يومياً؟',a:'ليترين',h:'حسب النشاط'},
+{l:'ز',d:'سهل',q:'رمز الذهب الكيميائي؟',a:'Au',h:'Aurum'},
+{l:'ز',d:'صعب',q:'في أي دولة مدينة البندقية؟',a:'إيطاليا',h:'مبنية على الماء'},
+{l:'ز',d:'متوسط',q:'أشهر عالم رياضيات إسلامي؟',a:'الخوارزمي',h:'سُمي الجبر باسمه'},
+/* س */
+{l:'س',d:'سهل',q:'عاصمة إسبانيا؟',a:'مدريد',h:'مدينة الملكيين'},
+{l:'س',d:'متوسط',q:'من اخترع الإنترنت؟',a:'تيم بيرنرز لي',h:'عام 1989'},
+{l:'س',d:'صعب',q:'أكبر رقم أولي أقل من 20؟',a:'تسعة عشر',h:'19'},
+{l:'س',d:'سهل',q:'أطول نهر في العالم؟',a:'النيل',h:'أو الأمازون'},
+{l:'س',d:'متوسط',q:'أول برنامج أوصل الإنسان للقمر؟',a:'أبولو',h:'1969'},
+{l:'س',d:'سهل',q:'رمز عنصر الكبريت؟',a:'S',h:'Sulfur'},
+{l:'س',d:'صعب',q:'الشاعر الملقب بالمتنبي؟',a:'أحمد بن الحسين',h:'من الكوفة'},
+{l:'س',d:'سهل',q:'كم كيلومتر في الميل؟',a:'واحد فاصل ستة',h:'1.6 km'},
+/* ش */
+{l:'ش',d:'سهل',q:'عاصمة الصين؟',a:'بكين',h:'Beijing'},
+{l:'ش',d:'سهل',q:'من اخترع الورق؟',a:'الصين',h:'قبل 2000 سنة'},
+{l:'ش',d:'صعب',q:'متى افتُتح قناة السويس؟',a:'1869',h:'ربط البحرين'},
+{l:'ش',d:'سهل',q:'أطول عمراً من الحيوانات؟',a:'السلحفاة',h:'150 سنة'},
+{l:'ش',d:'متوسط',q:'مجموع زوايا المثلث؟',a:'مائة وثمانون درجة',h:'180°'},
+{l:'ش',d:'سهل',q:'أكبر دولة عربية مساحة؟',a:'الجزائر',h:'في أفريقيا'},
+{l:'ش',d:'صعب',q:'من قال أنا أفكر إذن أنا موجود؟',a:'ديكارت',h:'فيلسوف فرنسي'},
+/* ص */
+{l:'ص',d:'سهل',q:'عاصمة السودان؟',a:'الخرطوم',h:'ملتقى النيلين'},
+{l:'ص',d:'متوسط',q:'رياضة فيدرر ونادال؟',a:'التنس',h:'Tennis'},
+{l:'ص',d:'سهل',q:'أول إنسان على القمر؟',a:'نيل أرمسترونغ',h:'1969'},
+{l:'ص',d:'صعب',q:'الاسم العلمي لفيتامين C؟',a:'حمض الأسكوربيك',h:'Ascorbic acid'},
+{l:'ص',d:'سهل',q:'أسرع طائر في العالم؟',a:'الصقر الشاهين',h:'320 كم/ساعة'},
+{l:'ص',d:'متوسط',q:'أعمق نقطة في المحيط؟',a:'خندق ماريانا',h:'أعمق من إيفرست'},
+/* ض */
+{l:'ض',d:'سهل',q:'الحيوان الذي يمشي جانبياً؟',a:'السرطان',h:'Crab'},
+{l:'ض',d:'متوسط',q:'مجموع الأرقام من 1 إلى 10؟',a:'خمسة وخمسون',h:'55'},
+{l:'ض',d:'سهل',q:'أكثر دول سكاناً؟',a:'الهند',h:'تجاوزت الصين'},
+{l:'ض',d:'سهل',q:'كم وجهاً للمكعب؟',a:'ستة',h:'6 وجوه'},
+{l:'ض',d:'متوسط',q:'من اكتشف قانون الجاذبية؟',a:'نيوتن',h:'التفاحة الشهيرة'},
+{l:'ض',d:'سهل',q:'رمز عنصر الحديد؟',a:'Fe',h:'Iron'},
+/* ط */
+{l:'ط',d:'سهل',q:'عاصمة ليبيا؟',a:'طرابلس',h:'على المتوسط'},
+{l:'ط',d:'متوسط',q:'الطائر الوحيد الذي يطير للخلف؟',a:'الطائر الطنان',h:'Hummingbird'},
+{l:'ط',d:'سهل',q:'من أسس أمازون؟',a:'جيف بيزوس',h:'أغنى رجل سابقاً'},
+{l:'ط',d:'سهل',q:'الفاكهة الوطنية للهند؟',a:'المانجو',h:'ملك الفواكه'},
+{l:'ط',d:'متوسط',q:'من قاد استقلال الهند؟',a:'غاندي',h:'حركة سلمية'},
+{l:'ط',d:'سهل',q:'عدد أضلاع المثلث؟',a:'ثلاثة',h:'وثلاث زوايا'},
+{l:'ط',d:'متوسط',q:'رياضة المضرب والريشة؟',a:'البادمنتون',h:'Badminton'},
+/* ظ */
+{l:'ظ',d:'سهل',q:'اختفاء الشمس خلف القمر؟',a:'الكسوف',h:'Solar eclipse'},
+{l:'ظ',d:'متوسط',q:'أضواء السماء في القطب؟',a:'الشفق القطبي',h:'Aurora'},
+{l:'ظ',d:'سهل',q:'عدد وجوه الهرم المربع؟',a:'خمسة',h:'4 جانبي + قاعدة'},
+{l:'ظ',d:'صعب',q:'سبب المد والجزر؟',a:'جاذبية القمر',h:'والشمس أيضاً'},
+{l:'ظ',d:'سهل',q:'أسرع عداء في التاريخ؟',a:'أوسين بولت',h:'من جامايكا'},
+{l:'ظ',d:'متوسط',q:'علم دراسة النباتات؟',a:'علم النبات',h:'Botany'},
+/* ع */
+{l:'ع',d:'سهل',q:'عاصمة إيران؟',a:'طهران',h:'أكبر مدن إيران'},
+{l:'ع',d:'متوسط',q:'من كتب الحرب والسلام؟',a:'تولستوي',h:'روائي روسي'},
+{l:'ع',d:'سهل',q:'عدد أضلاع المسدس؟',a:'ستة',h:'Hexagon'},
+{l:'ع',d:'سهل',q:'أكبر دولة في أفريقيا؟',a:'الجزائر',h:'بعد انفصال الجنوب'},
+{l:'ع',d:'متوسط',q:'كم فريقاً في كأس العالم؟',a:'اثنان وثلاثون',h:'32 فريقاً'},
+{l:'ع',d:'سهل',q:'أبعد كوكب عن الشمس؟',a:'نبتون',h:'Neptune'},
+{l:'ع',d:'صعب',q:'من اكتشف التيار المتردد؟',a:'تسلا',h:'Nikola Tesla'},
+{l:'ع',d:'سهل',q:'من هو أول رائد فضاء؟',a:'يوري غاغارين',h:'1961'},
+{l:'ع',d:'متوسط',q:'الغاز الذي نزفره؟',a:'ثاني أكسيد الكربون',h:'CO2'},
+/* غ */
+{l:'غ',d:'سهل',q:'الغاز في بالونات الأعياد؟',a:'الهيليوم',h:'أخف من الهواء'},
+{l:'غ',d:'متوسط',q:'من اخترع الجوال الأول؟',a:'مارتن كوبر',h:'1973'},
+{l:'غ',d:'صعب',q:'عدد الكروموسومات في الإنسان؟',a:'ستة وأربعون',h:'23 زوجاً'},
+{l:'غ',d:'سهل',q:'أكبر غابة في العالم؟',a:'تايغا',h:'في روسيا'},
+{l:'غ',d:'متوسط',q:'مجموع زوايا المربع؟',a:'ثلاثمائة وستون',h:'360°'},
+{l:'غ',d:'سهل',q:'الحيوان الوطني لأستراليا؟',a:'الكنغر',h:'Kangaroo'},
+/* ف */
+{l:'ف',d:'سهل',q:'عاصمة سويسرا؟',a:'برن',h:'وليست جنيف'},
+{l:'ف',d:'سهل',q:'من اكتشف مرض السل؟',a:'روبرت كوخ',h:'نوبل 1905'},
+{l:'ف',d:'سهل',q:'عاصمة النمسا؟',a:'فيينا',h:'مدينة الموسيقى'},
+{l:'ف',d:'متوسط',q:'من اكتشف قوانين الكواكب؟',a:'كبلر',h:'Kepler'},
+{l:'ف',d:'سهل',q:'أكبر نهر في أمريكا الجنوبية؟',a:'الأمازون',h:'الأوسع'},
+{l:'ف',d:'متوسط',q:'نظام تشغيل آبل للجوال؟',a:'iOS',h:'iPhone'},
+{l:'ف',d:'صعب',q:'الفلزات التي يستقطبها المغناطيس؟',a:'الحديد والنيكل والكوبالت',h:'Ferromagnetic'},
+{l:'ف',d:'سهل',q:'لون الأحمر مع الأصفر؟',a:'البرتقالي',h:'Orange'},
+/* ق */
+{l:'ق',d:'سهل',q:'عاصمة قطر؟',a:'الدوحة',h:'مونديال 2022'},
+{l:'ق',d:'سهل',q:'من أسس تسلا؟',a:'إيلون ماسك',h:'جنوب أفريقي'},
+{l:'ق',d:'متوسط',q:'من أسس الأكاديمية الأولى؟',a:'أفلاطون',h:'في أثينا'},
+{l:'ق',d:'سهل',q:'اليوم العالمي للبيئة؟',a:'الخامس من يونيو',h:'5 June'},
+{l:'ق',d:'صعب',q:'عدد الحواس الأساسية؟',a:'خمس',h:'سمع بصر شم تذوق لمس'},
+{l:'ق',d:'سهل',q:'أثقل المعادن كثافة؟',a:'الأوسميوم',h:'أكثر من الذهب'},
+/* ك */
+{l:'ك',d:'سهل',q:'عاصمة كوريا الجنوبية؟',a:'سيول',h:'Seoul'},
+{l:'ك',d:'سهل',q:'أكبر حيوان بري؟',a:'الفيل الأفريقي',h:'6 أطنان'},
+{l:'ك',d:'سهل',q:'مادة الإطارات؟',a:'المطاط',h:'Rubber'},
+{l:'ك',d:'متوسط',q:'المسافة بين الأرض والقمر؟',a:'ثلاثمائة وأربعة وثمانون ألف كيلومتر',h:'384,000 km'},
+{l:'ك',d:'سهل',q:'اتحاد الدول الأوروبية؟',a:'الاتحاد الأوروبي',h:'EU'},
+{l:'ك',d:'صعب',q:'من هو الخوارزمي؟',a:'عالم رياضيات مسلم',h:'مؤسس الجبر'},
+{l:'ك',d:'سهل',q:'أكثر ميداليات ذهبية في الأولمبياد؟',a:'مايكل فيلبس',h:'سباح أمريكي'},
+/* ل */
+{l:'ل',d:'سهل',q:'عاصمة لبنان؟',a:'بيروت',h:'باريس الشرق'},
+{l:'ل',d:'متوسط',q:'الضوء الأحادي المتماسك؟',a:'الليزر',h:'LASER'},
+{l:'ل',d:'سهل',q:'عدد كواكب المجموعة الشمسية؟',a:'ثمانية',h:'بعد إخراج بلوتو'},
+{l:'ل',d:'سهل',q:'مادة قلم الرصاص؟',a:'الغرافيت',h:'كربون'},
+{l:'ل',d:'متوسط',q:'أشهر مسجد في العالم؟',a:'المسجد الحرام',h:'في مكة المكرمة'},
+{l:'ل',d:'سهل',q:'أطول عظمة في الجسم؟',a:'عظمة الفخذ',h:'Femur'},
+{l:'ل',d:'صعب',q:'عمر الكون تقريباً؟',a:'ثلاثة عشر فاصل ثمانية مليار سنة',h:'Big Bang'},
+/* م */
+{l:'م',d:'سهل',q:'عاصمة المغرب؟',a:'الرباط',h:'وليست الدار البيضاء'},
+{l:'م',d:'متوسط',q:'من اكتشف أمريكا؟',a:'كريستوفر كولومبس',h:'1492'},
+{l:'م',d:'صعب',q:'وحدة قياس الكهرباء الأساسية؟',a:'الأمبير',h:'Ampere'},
+{l:'م',d:'سهل',q:'عملة المملكة المتحدة؟',a:'الجنيه الإسترليني',h:'Pound £'},
+{l:'م',d:'سهل',q:'أكبر ثدييات بحرية؟',a:'الحوت الأزرق',h:'Blue whale'},
+{l:'م',d:'صعب',q:'من صنع أول سيارة ببنزين؟',a:'كارل بنز',h:'1886'},
+{l:'م',d:'سهل',q:'كم متر في الكيلومتر؟',a:'ألف متر',h:'1000m'},
+{l:'م',d:'متوسط',q:'أشهر نهر في الهند؟',a:'الغانج',h:'مقدس عند الهندوس'},
+{l:'م',d:'سهل',q:'أرض الساموراي؟',a:'اليابان',h:'محاربون أسطوريون'},
+{l:'م',d:'متوسط',q:'عملة الهند؟',a:'الروبية',h:'Rupee ₹'},
+/* ن */
+{l:'ن',d:'سهل',q:'عاصمة نيجيريا؟',a:'أبوجا',h:'أكبر دول أفريقيا'},
+{l:'ن',d:'متوسط',q:'من أسس نظرية التطور؟',a:'داروين',h:'Charles Darwin'},
+{l:'ن',d:'صعب',q:'جهاز فصل مكونات الدم؟',a:'جهاز الطرد المركزي',h:'Centrifuge'},
+{l:'ن',d:'صعب',q:'عدد أسنان الإنسان البالغ كاملاً؟',a:'اثنان وثلاثون',h:'32 سن'},
+{l:'ن',d:'سهل',q:'أكبر طائر في العالم؟',a:'النعامة',h:'لا تطير'},
+{l:'ن',d:'سهل',q:'ما اسم أطول نهر في العالم؟',a:'النيل',h:'في أفريقيا'},
+/* ه */
+{l:'ه',d:'سهل',q:'عاصمة هولندا؟',a:'أمستردام',h:'ولاهاي للحكومة'},
+{l:'ه',d:'متوسط',q:'علم دراسة الزلازل؟',a:'علم الزلازل',h:'Seismology'},
+{l:'ه',d:'سهل',q:'أكبر كوكب في المجموعة الشمسية؟',a:'المشتري',h:'Jupiter'},
+{l:'ه',d:'متوسط',q:'وحدة قياس الصوت؟',a:'الديسيبل',h:'dB'},
+{l:'ه',d:'سهل',q:'جهاز قياس الضغط الجوي؟',a:'البارومتر',h:'Barometer'},
+/* و */
+{l:'و',d:'سهل',q:'عاصمة اليابان؟',a:'طوكيو',h:'أكبر مدينة في العالم'},
+{l:'و',d:'سهل',q:'الحيوان الوطني لكندا؟',a:'القندس',h:'Beaver'},
+{l:'و',d:'سهل',q:'اللغة الأكثر في أمريكا الجنوبية؟',a:'الإسبانية',h:'والبرتغالية في البرازيل'},
+{l:'و',d:'متوسط',q:'علم دراسة الفطريات؟',a:'علم الفطريات',h:'Mycology'},
+{l:'و',d:'سهل',q:'أرض الألف بحيرة؟',a:'فنلندا',h:'Finland'},
+{l:'و',d:'صعب',q:'أكبر تلسكوب في العالم؟',a:'تلسكوب جيمس ويب',h:'JWST'},
+{l:'و',d:'سهل',q:'الحيوان الذي يغفو شتاءً؟',a:'الدب',h:'Hibernation'},
+{l:'و',d:'متوسط',q:'صاحب نظرية المجموعات؟',a:'كانتور',h:'Georg Cantor'},
+/* ي */
+{l:'ي',d:'سهل',q:'عاصمة اليونان؟',a:'أثينا',h:'مهد الحضارة'},
+{l:'ي',d:'متوسط',q:'أطول نهر في الصين؟',a:'اليانغتسي',h:'أطول في آسيا'},
+{l:'ي',d:'سهل',q:'لون الأزرق مع الأصفر؟',a:'الأخضر',h:'Green'},
+{l:'ي',d:'متوسط',q:'من اخترع التلسكوب؟',a:'غاليليو',h:'Galileo'},
+{l:'ي',d:'سهل',q:'عدد أضلاع النجمة السداسية؟',a:'ستة',h:'نجمة داود'},
+{l:'ي',d:'سهل',q:'جهاز قياس شدة الصوت؟',a:'مقياس الديسيبل',h:'dB meter'},
+
+/* ════ أسئلة إضافية إلى 500+ ════ */
+{l:'ث',d:'سهل',q:'ما هو ثاني أكبر كوكب في المجموعة الشمسية؟',a:'زحل',h:'له حلقات جميلة'},
+{l:'ث',d:'متوسط',q:'ما هي ثلاثة مكونات الهواء الرئيسية؟',a:'نيتروجين وأكسجين وثاني أكسيد الكربون',h:'78% نيتروجين'},
+{l:'ث',d:'سهل',q:'كم ثانية في الدقيقة؟',a:'ستون',h:'60 ثانية'},
+{l:'ث',d:'صعب',q:'من اكتشف ثلاثة قوانين للحركة الكوكبية؟',a:'كبلر',h:'Johannes Kepler'},
+{l:'ث',d:'سهل',q:'ما هو ثقل الإنسان على القمر مقارنة بالأرض؟',a:'سدس ثقله',h:'جاذبية القمر أضعف'},
+{l:'ث',d:'متوسط',q:'كم ثانية في الساعة؟',a:'ثلاثة آلاف وستمائة',h:'3600 ثانية'},
+{l:'ز',d:'سهل',q:'ما هو الزخم في الرياضة؟',a:'قوة الحركة',h:'Mass x velocity'},
+{l:'ز',d:'متوسط',q:'ما هي الزراعة التي لا تحتاج تربة؟',a:'الزراعة المائية',h:'Hydroponics'},
+{l:'ز',d:'سهل',q:'ما اسم أكبر دولة في أمريكا الجنوبية؟',a:'البرازيل',h:'تتحدث البرتغالية'},
+{l:'ز',d:'صعب',q:'ما هو الزئبق كيميائياً؟',a:'عنصر فلزي سائل',h:'رمزه Hg'},
+{l:'ز',d:'سهل',q:'ما هي زراعة الأرز الأصلية؟',a:'آسيا',h:'الصين والهند'},
+{l:'ز',d:'متوسط',q:'من اخترع الزجاج المقوى؟',a:'إدوار بنيديكتوس',h:'عام 1909'},
+{l:'ز',d:'سهل',q:'ما اسم الزهرة التي ترمز للحب؟',a:'الوردة',h:'Rose'},
+{l:'غ',d:'سهل',q:'ما هو الغذاء الأساسي لمعظم شعوب آسيا؟',a:'الأرز',h:'Rice'},
+{l:'غ',d:'متوسط',q:'من هو غاليليو؟',a:'عالم فلك وفيزياء إيطالي',h:'القرن 17'},
+{l:'غ',d:'سهل',q:'ما هو غاز الأكسجين رمزه الكيميائي؟',a:'O',h:'Oxygen'},
+{l:'غ',d:'صعب',q:'ما هو الغشاء الذي يفصل الصدر عن البطن؟',a:'الحجاب الحاجز',h:'Diaphragm'},
+{l:'غ',d:'سهل',q:'ما هو الغذاء الذي يصنع من حليب البقر؟',a:'الجبن',h:'Cheese'},
+{l:'غ',d:'متوسط',q:'ما اسم غابة مشهورة في ألمانيا؟',a:'الغابة السوداء',h:'Black Forest'},
+{l:'غ',d:'سهل',q:'كيف يُسمى تغيير حالة الغاز لسائل؟',a:'التكثف',h:'Condensation'},
+{l:'غ',d:'سهل',q:'ما هو أكبر محيط في العالم؟',a:'الهادئ',h:'Pacific Ocean'},
+{l:'ص',d:'سهل',q:'ما هو الصوت الذي يُصدره الكلب؟',a:'النباح',h:'Bark'},
+{l:'ص',d:'متوسط',q:'ما هي الصناعة الأكثر تلويثاً للبيئة؟',a:'صناعة النسيج',h:'الملابس السريعة'},
+{l:'ص',d:'سهل',q:'من فاز بكأس العالم 2022؟',a:'الأرجنتين',h:'في قطر'},
+{l:'ص',d:'صعب',q:'ما هي الصخور التي تتكون من معادن متبلورة؟',a:'الصخور النارية',h:'Igneous rocks'},
+{l:'ص',d:'سهل',q:'ما اسم صحراء المملكة العربية السعودية الكبيرة؟',a:'الربع الخالي',h:'أكبر صحراء رملية'},
+{l:'ص',d:'متوسط',q:'ما هو الصوت فوق المسموع؟',a:'الموجات فوق الصوتية',h:'Ultrasound'},
+{l:'ض',d:'سهل',q:'ما هو الضوء الذي يستخدم في أجهزة التحكم؟',a:'الأشعة تحت الحمراء',h:'Infrared'},
+{l:'ض',d:'متوسط',q:'ما هي الضفيرة العصبية الكبرى في الجسم؟',a:'العمود الفقري',h:'Spinal cord'},
+{l:'ض',d:'سهل',q:'من فاز ببطولة ويمبلدون الأكثر؟',a:'نوفاك ديوكوفيتش',h:'صربي'},
+{l:'ض',d:'صعب',q:'ما هو الضغط الذي يسبب الانفجار؟',a:'ضغط أعلى من قدرة تحمل المادة',h:'Burst pressure'},
+{l:'ض',d:'سهل',q:'ما هو الضوء المرئي من الشمس؟',a:'الضوء الأبيض',h:'طيف ألوان'},
+{l:'ض',d:'متوسط',q:'من هو ضابط الدراما الفرنسي نابليون؟',a:'نابليون بونابرت',h:'إمبراطور فرنسا'},
+/* ════ أسئلة جغرافيا إضافية ════ */
+{l:'أ',d:'سهل',q:'ما عاصمة كندا؟',a:'أوتاوا',h:'ليست تورنتو'},
+{l:'أ',d:'متوسط',q:'ما هو أعمق محيط في العالم؟',a:'المحيط الهادئ',h:'Pacific Ocean'},
+{l:'أ',d:'سهل',q:'ما الحيوان الذي يسمى سفينة الصحراء؟',a:'الجمل',h:'Camel'},
+{l:'أ',d:'متوسط',q:'ما اسم القارة الجنوبية المتجمدة؟',a:'أنتاركتيكا',h:'Antarctica'},
+{l:'أ',d:'صعب',q:'ما أطول أنهار أوروبا؟',a:'الفولغا',h:'في روسيا'},
+{l:'أ',d:'سهل',q:'كم عدد قارات العالم؟',a:'سبع',h:'7 قارات'},
+{l:'ب',d:'سهل',q:'ما عاصمة إيطاليا؟',a:'روما',h:'مدينة الكولوسيوم'},
+{l:'ب',d:'متوسط',q:'أين يقع برج بيزا المائل؟',a:'إيطاليا',h:'مدينة بيزا'},
+{l:'ب',d:'سهل',q:'ما عاصمة البرتغال؟',a:'لشبونة',h:'Lisbon'},
+{l:'ب',d:'متوسط',q:'أين تقع قناة بنما؟',a:'بنما',h:'تربط المحيطين'},
+{l:'ب',d:'سهل',q:'ما عاصمة بولندا؟',a:'وارسو',h:'Warsaw'},
+{l:'ت',d:'سهل',q:'ما عاصمة إسبانيا؟',a:'مدريد',h:'Madrid'},
+{l:'ت',d:'متوسط',q:'من اخترع التلفزيون؟',a:'جون لوجي بيرد',h:'مخترع بريطاني'},
+{l:'ت',d:'سهل',q:'ما أطول نهر في أوروبا بعد الفولغا؟',a:'الدانوب',h:'Danube'},
+{l:'ت',d:'متوسط',q:'ما هو تاريخ اكتشاف أمريكا؟',a:'1492',h:'كولومبس'},
+{l:'ج',d:'سهل',q:'ما عاصمة اليابان؟',a:'طوكيو',h:'Tokyo'},
+{l:'ج',d:'سهل',q:'أين يقع جبل فوجي؟',a:'اليابان',h:'Mount Fuji'},
+{l:'ج',d:'متوسط',q:'ما أكبر مدن الصين؟',a:'شنغهاي',h:'Shanghai'},
+{l:'ج',d:'سهل',q:'أين تقع أهرامات الجيزة؟',a:'الجيزة في مصر',h:'قرب القاهرة'},
+{l:'ح',d:'سهل',q:'ما أكبر الجزر في البحر المتوسط؟',a:'صقلية',h:'Sicily'},
+{l:'ح',d:'متوسط',q:'ما الحد الفاصل بين أوروبا وآسيا؟',a:'جبال الأورال',h:'Ural Mountains'},
+{l:'ح',d:'سهل',q:'ما عاصمة المكسيك؟',a:'مكسيكو سيتي',h:'Mexico City'},
+{l:'ح',d:'سهل',q:'ما عاصمة السويد؟',a:'ستوكهولم',h:'Stockholm'},
+{l:'خ',d:'سهل',q:'ما عاصمة اليونان؟',a:'أثينا',h:'Athens'},
+{l:'خ',d:'متوسط',q:'أين تقع صحراء الجوبي؟',a:'المنغول والصين',h:'Gobi Desert'},
+{l:'خ',d:'سهل',q:'ما عاصمة بلجيكا؟',a:'بروكسل',h:'Brussels'},
+{l:'خ',d:'سهل',q:'ما عاصمة الكويت؟',a:'الكويت',h:'نفس اسم البلد'},
+{l:'د',d:'سهل',q:'ما عاصمة الدنمارك؟',a:'كوبنهاغن',h:'Copenhagen'},
+{l:'د',d:'سهل',q:'ما هي دولة بناء سور الصين العظيم؟',a:'الصين',h:'Great Wall of China'},
+{l:'ر',d:'سهل',q:'ما عاصمة الصين؟',a:'بكين',h:'Beijing'},
+{l:'ر',d:'سهل',q:'ما أكبر أرخبيل في العالم؟',a:'إندونيسيا',h:'17000 جزيرة'},
+{l:'ر',d:'متوسط',q:'ما عاصمة النرويج؟',a:'أوسلو',h:'Oslo'},
+{l:'ر',d:'سهل',q:'ما عاصمة رومانيا؟',a:'بوخارست',h:'Bucharest'},
+{l:'س',d:'سهل',q:'ما عاصمة سلطنة عُمان؟',a:'مسقط',h:'Muscat'},
+{l:'س',d:'سهل',q:'ما عاصمة المملكة العربية السعودية؟',a:'الرياض',h:'Riyadh'},
+{l:'س',d:'سهل',q:'ما عاصمة سوريا؟',a:'دمشق',h:'Damascus'},
+{l:'ش',d:'سهل',q:'ما عاصمة شيلي؟',a:'سانتياغو',h:'Santiago'},
+{l:'ش',d:'متوسط',q:'أين تقع شلالات نياغارا؟',a:'الحدود الأمريكية الكندية',h:'Niagara Falls'},
+{l:'ش',d:'سهل',q:'ما عاصمة سنغافورة؟',a:'سنغافورة',h:'City-state'},
+{l:'ص',d:'سهل',q:'أين تقع الصحراء الكبرى؟',a:'شمال أفريقيا',h:'Sahara Desert'},
+{l:'ص',d:'سهل',q:'ما عاصمة الصومال؟',a:'مقديشو',h:'Mogadishu'},
+{l:'ط',d:'سهل',q:'ما عاصمة تنزانيا؟',a:'دودوما',h:'Dodoma'},
+{l:'ع',d:'سهل',q:'ما عاصمة العراق؟',a:'بغداد',h:'Baghdad'},
+{l:'ع',d:'سهل',q:'ما أكبر مدن العالم سكاناً؟',a:'طوكيو',h:'Tokyo'},
+{l:'ع',d:'متوسط',q:'أين تقع مدينة عدن؟',a:'اليمن',h:'Aden'},
+{l:'غ',d:'سهل',q:'ما عاصمة غانا؟',a:'أكرا',h:'Accra'},
+{l:'غ',d:'سهل',q:'ما أكبر غابات المطر في آسيا؟',a:'غابات بورنيو',h:'Borneo Rainforest'},
+{l:'ف',d:'سهل',q:'ما عاصمة فنلندا؟',a:'هلسنكي',h:'Helsinki'},
+{l:'ف',d:'سهل',q:'ما عاصمة فلسطين؟',a:'القدس',h:'Jerusalem'},
+{l:'ف',d:'سهل',q:'أين تقع مدينة فلورنسا التاريخية؟',a:'إيطاليا',h:'Florence'},
+{l:'ق',d:'سهل',q:'ما عاصمة مصر؟',a:'القاهرة',h:'Cairo'},
+{l:'ق',d:'متوسط',q:'أين يقع قوس النصر الشهير؟',a:'باريس فرنسا',h:'Arc de Triomphe'},
+{l:'ق',d:'سهل',q:'ما أكبر جزيرة في العالم؟',a:'غرينلاند',h:'Greenland'},
+{l:'ق',d:'سهل',q:'ما عاصمة قبرص؟',a:'نيقوسيا',h:'Nicosia'},
+{l:'ك',d:'سهل',q:'ما عاصمة كمبوديا؟',a:'بنوم بنه',h:'Phnom Penh'},
+{l:'ك',d:'سهل',q:'ما عاصمة كينيا؟',a:'نيروبي',h:'Nairobi'},
+{l:'ك',d:'سهل',q:'ما عاصمة كرواتيا؟',a:'زغرب',h:'Zagreb'},
+{l:'ل',d:'سهل',q:'ما عاصمة ليبيريا؟',a:'مونروفيا',h:'Monrovia'},
+{l:'ل',d:'متوسط',q:'أين تقع بحيرة لوخ نيس؟',a:'اسكتلندا',h:'Loch Ness'},
+{l:'ل',d:'سهل',q:'ما عاصمة لاوس؟',a:'فيينتيان',h:'Vientiane'},
+{l:'ل',d:'سهل',q:'ما عاصمة لوكسمبورغ؟',a:'لوكسمبورغ',h:'نفس الاسم'},
+{l:'م',d:'سهل',q:'ما عاصمة موريتانيا؟',a:'نواكشوط',h:'Nouakchott'},
+{l:'م',d:'سهل',q:'ما عاصمة منغوليا؟',a:'أولان باتور',h:'Ulaanbaatar'},
+{l:'م',d:'صعب',q:'ما أطول جدار في التاريخ؟',a:'سور الصين العظيم',h:'21196 كيلومتر'},
+{l:'م',d:'سهل',q:'ما عاصمة موزمبيق؟',a:'مابوتو',h:'Maputo'},
+{l:'ن',d:'سهل',q:'ما عاصمة النيجر؟',a:'نيامي',h:'Niamey'},
+{l:'ن',d:'سهل',q:'ما عاصمة ناميبيا؟',a:'ويندهوك',h:'Windhoek'},
+{l:'ن',d:'سهل',q:'ما عاصمة نيبال؟',a:'كاتماندو',h:'Kathmandu'},
+{l:'ه',d:'سهل',q:'ما عاصمة هنغاريا؟',a:'بودابست',h:'Budapest'},
+{l:'ه',d:'سهل',q:'ما عاصمة هاييتي؟',a:'بور أو برانس',h:'Port-au-Prince'},
+{l:'و',d:'سهل',q:'ما عاصمة الولايات المتحدة؟',a:'واشنطن',h:'Washington D.C.'},
+{l:'و',d:'سهل',q:'ما عاصمة أوغندا؟',a:'كمبالا',h:'Kampala'},
+{l:'و',d:'سهل',q:'ما عاصمة أوكرانيا؟',a:'كييف',h:'Kyiv'},
+{l:'ي',d:'سهل',q:'ما عاصمة اليمن؟',a:'صنعاء',h:'Sana\'a'},
+{l:'ي',d:'سهل',q:'ما أكبر يابسة في العالم؟',a:'أوراسيا',h:'أوروبا وآسيا معاً'},
+{l:'ي',d:'سهل',q:'ما أصغر دولة في العالم؟',a:'الفاتيكان',h:'Vatican City'},
+/* ════ علوم وتاريخ إضافية ════ */
+{l:'أ',d:'متوسط',q:'من كتب مسرحية روميو وجولييت؟',a:'شكسبير',h:'Shakespeare'},
+{l:'ب',d:'سهل',q:'ما وحدة قياس درجة الحرارة في الفيزياء؟',a:'الكلفن',h:'Kelvin'},
+{l:'ت',d:'متوسط',q:'ما نظرية بيثاغورس؟',a:'مربع الوتر يساوي مجموع مربعي الضلعين',h:'a²+b²=c²'},
+{l:'ج',d:'سهل',q:'ما الجهاز المسؤول عن الهضم؟',a:'الجهاز الهضمي',h:'Digestive system'},
+{l:'ح',d:'متوسط',q:'من كتب مقدمة ابن خلدون؟',a:'ابن خلدون',h:'مؤرخ عربي مسلم'},
+{l:'خ',d:'سهل',q:'ما رمز الذهب في الجدول الدوري؟',a:'Au',h:'Aurum'},
+{l:'د',d:'متوسط',q:'متى بدأت الثورة الفرنسية؟',a:'1789',h:'French Revolution'},
+{l:'ر',d:'متوسط',q:'من اخترع راديو اللاسلكي؟',a:'ماركوني',h:'Guglielmo Marconi'},
+{l:'ز',d:'سهل',q:'ما زوايا المثلث المتساوي الأضلاع؟',a:'60 درجة لكل زاوية',h:'Equilateral triangle'},
+{l:'س',d:'متوسط',q:'ما السرعة الضوئية تقريباً؟',a:'300 ألف كيلومتر في الثانية',h:'c = 3×10⁸ m/s'},
+{l:'ش',d:'سهل',q:'كم عدد أضلاع المثمن؟',a:'ثمانية',h:'Octagon'},
+{l:'ص',d:'متوسط',q:'متى سقطت القسطنطينية؟',a:'1453',h:'فتحها محمد الثاني'},
+{l:'ط',d:'سهل',q:'ما الطاقة المختزنة في الغذاء؟',a:'السعرات الحرارية',h:'Calories'},
+{l:'ع',d:'سهل',q:'ما عدد حروف الأبجدية العربية؟',a:'ثمانية وعشرون',h:'28 حرف'},
+{l:'غ',d:'متوسط',q:'من اكتشف غاز الأكسجين؟',a:'لافوازييه وبريستلي',h:'Lavoisier & Priestley'},
+{l:'ف',d:'سهل',q:'ما وحدة قياس القوة؟',a:'النيوتن',h:'Newton N'},
+{l:'ق',d:'متوسط',q:'متى بدأت الحرب العالمية الأولى؟',a:'1914',h:'WW1'},
+{l:'ك',d:'سهل',q:'ما رمز البوتاسيوم في الجدول الدوري؟',a:'K',h:'Kalium'},
+{l:'ل',d:'متوسط',q:'من أسس علم الفلسفة الحديثة؟',a:'ديكارت',h:'René Descartes'},
+{l:'م',d:'سهل',q:'كم متراً في الكيلومتر؟',a:'ألف متر',h:'1000m'},
+{l:'ن',d:'متوسط',q:'متى انتهت الحرب العالمية الثانية؟',a:'1945',h:'WW2'},
+{l:'ه',d:'سهل',q:'ما الجهاز الذي يحمي الجسم من الأمراض؟',a:'الجهاز المناعي',h:'Immune system'},
+{l:'و',d:'متوسط',q:'من قاد الحملة المنغولية على بغداد؟',a:'هولاكو',h:'Hulagu Khan 1258'},
+{l:'ي',d:'متوسط',q:'من اخترع الطائرة النفاثة؟',a:'فرانك ويتل',h:'Frank Whittle'},
+/* ════ رياضة وفنون وثقافة ════ */
+{l:'أ',d:'سهل',q:'ما أشهر لوحة في العالم؟',a:'الموناليزا',h:'Mona Lisa — ليوناردو دافنشي'},
+{l:'ب',d:'سهل',q:'ما أشهر رياضة في البرازيل؟',a:'كرة القدم',h:'Football/Soccer'},
+{l:'ت',d:'متوسط',q:'كم مرة فاز الأرجنتين بكأس العالم؟',a:'ثلاث مرات',h:'1978، 1986، 2022'},
+{l:'ج',d:'سهل',q:'من صنع سيارة فيراري؟',a:'إنزو فيراري',h:'Enzo Ferrari'},
+{l:'ح',d:'سهل',q:'ما اسم البطل الخارق لشركة مارفل الأشهر؟',a:'سبايدرمان',h:'Spider-Man'},
+{l:'خ',d:'متوسط',q:'كم مرة فاز ريال مدريد بدوري الأبطال؟',a:'خمس عشرة مرة',h:'أكثر فريق في التاريخ'},
+{l:'د',d:'سهل',q:'من صمم برج إيفل؟',a:'غوستاف إيفل',h:'Gustave Eiffel'},
+{l:'ذ',d:'سهل',q:'ما أطول سلسلة أفلام في التاريخ؟',a:'بوند جيمس بوند',h:'25+ فيلم'},
+{l:'ر',d:'سهل',q:'من هو أسرع لاعب كرة في التاريخ؟',a:'كيليان مبابي',h:'فرنسا'},
+{l:'ز',d:'متوسط',q:'ما اسم أول رواية في التاريخ؟',a:'حكاية الجنجي',h:'يابانية القرن 11'},
+{l:'س',d:'سهل',q:'في أي عام أُسست شركة آبل؟',a:'1976',h:'Apple founded'},
+{l:'ش',d:'متوسط',q:'من هو مؤسس شركة مايكروسوفت؟',a:'بيل غيتس',h:'Bill Gates'},
+{l:'ص',d:'سهل',q:'ما أشهر رياضة في الهند؟',a:'الكريكيت',h:'Cricket'},
+{l:'ط',d:'سهل',q:'من هو صاحب أسرع سيارة في العالم؟',a:'بوغاتي شيرون',h:'Bugatti Chiron'},
+{l:'ع',d:'متوسط',q:'ما أشهر مهرجانات أوروبا؟',a:'أوكتوبرفيست',h:'Oktoberfest — ألمانيا'},
+{l:'غ',d:'سهل',q:'من فاز بأكبر عدد من جوائز الغرامي؟',a:'بيونسيه',h:'Beyoncé'},
+{l:'ف',d:'سهل',q:'ما اسم أشهر سيمفونية لبيتهوفن؟',a:'السيمفونية التاسعة',h:'Beethoven 9th'},
+{l:'ق',d:'سهل',q:'ما أشهر رياضة في الصين؟',a:'كرة الطاولة',h:'Table Tennis'},
+{l:'ك',d:'سهل',q:'من هو مؤسس ميتا فيسبوك؟',a:'مارك زوكربرغ',h:'Mark Zuckerberg'},
+{l:'ل',d:'متوسط',q:'ما أشهر مسلسل أمريكي في التاريخ؟',a:'فريندز',h:'Friends'},
+{l:'م',d:'سهل',q:'من هو مؤسس شركة تيسلا؟',a:'إيلون ماسك',h:'Elon Musk'},
+{l:'ن',d:'سهل',q:'ما أشهر رياضة في أمريكا؟',a:'الأمريكي فوتبول',h:'NFL'},
+{l:'ه',d:'سهل',q:'من فاز بأكبر عدد من ألقاب التنس؟',a:'نوفاك ديوكوفيتش',h:'Djokovic'},
+{l:'و',d:'متوسط',q:'ما أشهر مباراة في تاريخ كأس العالم؟',a:'البرازيل مقابل الأرجنتين',h:'El Clásico الأمريكي'},
+{l:'ي',d:'سهل',q:'من هو مؤسس يوتيوب؟',a:'جاويد كريم وشريكاه',h:'YouTube 2005'},
 ];
 
 /* ════════════════════════════════════════════════════════
@@ -2257,32 +3331,38 @@ function generateQR(code) {
   const roomUrl = `${baseUrl}?room=${code}`;
   const img = document.getElementById('qr-img');
   const lbl = document.getElementById('qr-label');
+  const urlEl = document.getElementById('qr-join-url');
 
-  // Primary: goqr.me API
-  const primary   = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(roomUrl)}&bgcolor=1c0850&color=f5c842&margin=6&format=png`;
-  // Fallback: quickchart.io
-  const fallback  = `https://quickchart.io/qr?text=${encodeURIComponent(roomUrl)}&size=150&dark=f5c842&light=1c0850`;
+  const primary  = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(roomUrl)}&bgcolor=0c032d&color=f5c842&margin=5&format=png`;
+  const fallback = `https://quickchart.io/qr?text=${encodeURIComponent(roomUrl)}&size=130&dark=f5c842&light=0c032d`;
 
+  if(lbl) lbl.textContent = `كود: ${code}`;
+  if(urlEl) urlEl.textContent = `أو افتح الرابط وادخل الكود: ${code}`;
+
+  if(!img) return;
   img.style.display = 'none';
   img.onerror = () => {
     img.src = fallback;
-    img.onerror = () => { lbl.textContent = `رابط الغرفة: ?room=${code}`; };
+    img.onerror = () => { if(lbl) lbl.textContent = `كود الغرفة: ${code}`; };
   };
   img.onload = () => { img.style.display = 'block'; };
   img.src = primary;
-  lbl.textContent = `كود الغرفة: ${code}`;
 }
 
 function olCreate() {
   if(!fbDB) { olStatus('c','⚠️ أضف إعدادات Firebase أولاً','err'); return; }
-  const name = document.getElementById('ol-cn').value.trim() || 'اللاعب 1';
+  const name = document.getElementById('ol-cn').value.trim() || 'المضيف';
   if(!OL.team) { olStatus('c','اختر فريقك أولاً','err'); return; }
-  const code = genCode(); OL.code=code; OL.isHost=true; OL.pid='p'+Date.now();
-  const data = {code, status:'waiting', host:OL.pid, created:Date.now(),
-    players:{[OL.pid]:{name,team:OL.team,score:0,ts:Date.now()}}};
+  const code = genCode();
+  OL.code = code; OL.isHost = true; OL.pid = 'p'+Date.now();
+  OL.name = name;
+  const data = {
+    code, status:'waiting', host:OL.pid, created:Date.now(),
+    players:{[OL.pid]:{name, team:OL.team, score:0, ts:Date.now(), pid:OL.pid}}
+  };
   fbRoomRef = fbDB.ref('rooms/'+code);
   fbRoomRef.set(data)
-    .then(()=>{olStatus('c','✅ الغرفة جاهزة!','ok');setTimeout(()=>enterWait(code),700);})
+    .then(()=>{ olStatus('c','✅ الغرفة جاهزة!','ok'); setTimeout(()=>enterWait(code),600); })
     .catch(e=>olStatus('c','❌ '+e.message,'err'));
 }
 
@@ -2297,9 +3377,9 @@ function olJoin() {
     if(!d){olStatus('j','❌ لا توجد غرفة بهذا الكود','err');return;}
     if(d.status==='started'){olStatus('j','❌ اللعبة بدأت بالفعل','err');return;}
     if(Object.keys(d.players||{}).length>=4){olStatus('j','❌ الغرفة ممتلئة','err');return;}
-    OL.code=code;OL.isHost=false;OL.pid='p'+Date.now();
+    OL.code=code; OL.isHost=false; OL.pid='p'+Date.now(); OL.name=name;
     fbRoomRef=fbDB.ref('rooms/'+code);
-    fbRoomRef.child('players/'+OL.pid).set({name,team:OL.team,score:0,ts:Date.now()})
+    fbRoomRef.child('players/'+OL.pid).set({name,team:OL.team,score:0,ts:Date.now(),pid:OL.pid})
       .then(()=>{olStatus('j','✅ انضممت!','ok');setTimeout(()=>enterWait(code),700);})
       .catch(e=>olStatus('j','❌ '+e.message,'err'));
   }).catch(e=>olStatus('j','❌ '+e.message,'err'));
@@ -2307,12 +3387,20 @@ function olJoin() {
 
 function enterWait(code) {
   document.getElementById('room-code').textContent = code;
-  generateQR(code); // توليد QR
+  generateQR(code);
+
+  // إظهار زر شاشة العرض فقط للمضيف
+  const dispBtn = document.getElementById('btn-disp-wait');
+  if(dispBtn) dispBtn.style.display = OL.isHost ? 'inline-flex' : 'none';
+
   show('sowait');
-  fbRoomRef.on('value',snap=>{
-    const d=snap.val(); if(!d)return;
+  fbRoomRef.on('value', snap=>{
+    const d = snap.val(); if(!d) return;
     renderSlots(d.players||{});
-    if(d.status==='started'){applyServerState(d.gameState);enterOnlineGame(d);}
+    if(d.status==='started') {
+      applyServerState(d.gameState);
+      enterOnlineGame(d);
+    }
   });
 }
 
@@ -2368,22 +3456,40 @@ function renderSlots(players) {
   }
 }
 
+/* ═══════════════════════════════════════════════════════
+   منطق الأونلاين المُعاد بناؤه
+   ═══════════════════════════════════════════════════════
+   الأدوار:
+   - المضيف (host)  : يدير السيرفر، يشغّل شاشة العرض
+   - اللاعبون       : يجاوبون من أجهزتهم
+   - الفائز         : فريقه يختار الخلية التالية
+   ═══════════════════════════════════════════════════════ */
+
 function olStartGame() {
   if(!OL.isHost) return;
   readConfig(); initGame();
-  G.usedQ = new Set(); // إعادة تعيين الأسئلة المستخدمة
+  G.usedQ = new Set();
+
   const gs = {
-    cells: G.cells.map(c=>({...c})),
-    scores: {r:0,b:0},
-    active: null,
-    curQ: null,
-    phase: 'pick',
-    usedQ: [],
-    turn: 'r' // الدور يتبادل
+    cells:   G.cells.map(c=>({...c})),
+    scores:  {r:0, b:0},
+    active:  null,
+    curQ:    null,
+    phase:   'pick',       // pick | answer
+    turn:    'r',          // الفريق الذي دوره يختار الخلية
+    usedQ:   [],
+    lastWinner: null,
+    pickReq: null,
+    winnerEvent: null
   };
   fbRoomRef.update({status:'started', gameState:gs, startedAt:Date.now()});
 
-  // المضيف يراقب الإجابات ويحكم
+  // إظهار زر شاشة العرض للمضيف
+  ['btn-disp-wait','og-disp-btn'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.style.display='inline-flex';
+  });
+
+  // ── المضيف يراقب الإجابات ──
   fbRoomRef.child('gameState/winnerEvent').on('value', snap=>{
     const we = snap.val();
     if(!we || we.processed) return;
@@ -2394,37 +3500,62 @@ function olStartGame() {
     if(normalize(we.answer) === normalize(q.a)) {
       const cd = gc(we.r, we.c);
       if(cd && !cd.owner) {
-        cd.owner = we.team;
+        cd.owner  = we.team;
         G.scores[we.team]++;
         G.usedQ.add(q.q);
+        const prevActive = {...G.active};
         G.active = null; G.curQ = null;
+
+        // الفريق الفائز يختار الخلية التالية
         const newGs = {
-          cells: G.cells.map(c=>({...c})),
-          scores: {...G.scores},
-          active: null, curQ: null,
-          phase: 'pick',
-          usedQ: [...G.usedQ],
-          lastWinner: {name: we.playerName||'', team: we.team},
-          winnerEvent: {processed:true}
+          cells:   G.cells.map(c=>({...c})),
+          scores:  {...G.scores},
+          active:  null, curQ: null,
+          phase:   'pick',
+          turn:    we.team,   // ← الفائز يختار
+          usedQ:   [...G.usedQ],
+          lastWinner: {name: we.playerName||'لاعب', team: we.team, letter: cd.letter},
+          winnerEvent: {processed:true},
+          pickReq: null
         };
-        fbRoomRef.child('gameState').update(newGs);
-        playCorrectSound(); checkWin();
+        fbRoomRef.child('gameState').set(newGs);
+        playCorrectSound();
+        // فحص الفوز
+        setTimeout(()=>{
+          applyServerState(newGs);
+          checkWin();
+        }, 200);
       }
     }
   });
 
-  // المضيف يراقب طلبات تغيير السؤال
-  fbRoomRef.child('gameState/changeQReq').on('value', snap=>{
+  // ── المضيف يراقب طلبات اختيار الخلية من الفريق الفائز ──
+  fbRoomRef.child('gameState/pickReq').on('value', snap=>{
     const req = snap.val();
-    if(!req || req.processed || !G.curQ || !G.active) return;
-    G.usedQ.add(G.curQ.q);
-    loadQ(gc(G.active.r, G.active.c).letter);
-    const upd = {
-      'gameState/curQ': G.curQ,
-      'gameState/usedQ': [...G.usedQ],
-      'gameState/changeQReq/processed': true
-    };
-    fbRoomRef.update(upd);
+    if(!req || req.processed) return;
+    const cd = gc(req.r, req.c);
+    if(!cd || cd.owner) return;
+    // تحقق أن الطالب من الفريق الذي دوره
+    fbRoomRef.child('gameState/turn').once('value', tsnap=>{
+      const turn = tsnap.val();
+      if(req.team !== turn) return; // مش دوره
+      G.active = {r:req.r, c:req.c};
+      loadQ(cd.letter);
+      fbRoomRef.child('gameState/winnerEvent').remove();
+      const newGs = {
+        cells:  G.cells.map(c=>({...c})),
+        scores: {...G.scores},
+        active: {r:req.r, c:req.c},
+        curQ:   G.curQ,
+        phase:  'answer',
+        turn:   turn,
+        usedQ:  [...G.usedQ],
+        lastWinner: null,
+        pickReq: {processed:true},
+        winnerEvent: null
+      };
+      fbRoomRef.child('gameState').set(newGs);
+    });
   });
 }
 
@@ -2439,101 +3570,148 @@ let _ogListenerAttached = false;
 function enterOnlineGame(d) {
   ['og-nr','og-dlr'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=G.names.r;});
   ['og-nb','og-dlb'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=G.names.b;});
+
+  // إظهار زر شاشة العرض للمضيف
+  const dispBtn = document.getElementById('og-disp-btn');
+  if(dispBtn && OL.isHost) dispBtn.style.display='inline-flex';
+
   show('song');
 
-  // بناء الشبكة مرة واحدة
-  const ogSz = calcHexSize('ogrid');
-  buildGrid('ogrid', ogSz.W, ogSz.H, OL.isHost ? ogSelectCell : null, true);
+  const sz = calcHexSize('ogrid');
+  // اللاعبون لا يضغطون خلايا، فقط الفريق الذي دوره
+  buildGrid('ogrid', sz.W, sz.H, ogCellClick, true);
 
   if(_ogListenerAttached) return;
   _ogListenerAttached = true;
 
   fbRoomRef.on('value', snap=>{
     const d = snap.val(); if(!d) return;
-
-    // تطبيق الحالة
-    const prevActive = G.active ? `${G.active.r},${G.active.c}` : null;
     applyServerState(d.gameState);
     if(d.gameState?.usedQ) d.gameState.usedQ.forEach(q=>G.usedQ.add(q));
-    const newActive = G.active ? `${G.active.r},${G.active.c}` : null;
 
-    // أعد رسم الشبكة فقط عند تغيير الخلايا
-    const sz = calcHexSize('ogrid');
-    buildGrid('ogrid', sz.W, sz.H, OL.isHost ? ogSelectCell : null, false);
+    const sz2 = calcHexSize('ogrid');
+    buildGrid('ogrid', sz2.W, sz2.H, ogCellClick, false);
 
-    // تحديث النتيجة
     document.getElementById('og-sr').textContent = G.scores.r;
     document.getElementById('og-sb').textContent = G.scores.b;
 
-    // آخر فائز
+    // إشعار آخر فائز
     if(d.gameState?.lastWinner) {
       const lw = d.gameState.lastWinner;
-      showOGFlash(`🏆 ${lw.name} فاز بالخلية!`, lw.team==='r'?'ok-r':'ok-b');
+      showOGFlash(`🏆 ${lw.name} فاز بخلية "${lw.letter||''}"! دور فريقه يختار`, lw.team==='r'?'ok-r':'ok-b');
     }
 
-    // عرض السؤال
     ogUpdateQuestion(d.gameState);
-
-    // قائمة اللاعبين
     if(d.players) renderOGPlayers(d.players);
   });
 }
 
-function ogUpdateQuestion(gs) {
-  const qEl  = document.getElementById('og-q');
-  const lEl  = document.getElementById('og-ltr');
-  const aa   = document.getElementById('og-ans-area');
-  const inp  = document.getElementById('og-ai');
+/* الضغط على خلية في الأونلاين:
+   - إذا كان المضيف: يختار مباشرة (fallback)
+   - إذا كان اللاعب ودوره يختار: يرسل pickReq
+*/
+function ogCellClick(r, c) {
+  if(G.over) return;
+  const cd = gc(r,c);
+  if(!cd || cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
 
-  if(gs?.curQ) {
+  // المضيف له صلاحية اختيار أي وقت
+  if(OL.isHost) {
+    ogSelectCell(r, c);
+    return;
+  }
+
+  // اللاعب — تحقق أن دوره هو يختار (phase=pick وfريقه=turn)
+  fbRoomRef.child('gameState').once('value', snap=>{
+    const gs = snap.val();
+    if(!gs) return;
+    if(gs.phase !== 'pick') { toast('⏳ انتظر انتهاء السؤال الحالي','terr'); return; }
+    if(gs.turn !== OL.team) { toast('⏳ ليس دورك لاختيار الخلية','terr'); return; }
+    // أرسل طلب الاختيار
+    fbRoomRef.child('gameState/pickReq').set({
+      r, c,
+      team: OL.team,
+      player: OL.pid,
+      ts: Date.now(),
+      processed: false
+    });
+    toast('✅ طلب الخلية أُرسل...');
+  });
+}
+
+function ogUpdateQuestion(gs) {
+  const qEl = document.getElementById('og-q');
+  const lEl = document.getElementById('og-ltr');
+  const aa  = document.getElementById('og-ans-area');
+  const inp = document.getElementById('og-ai');
+  const turnBox = document.getElementById('og-turn-box');
+
+  if(gs?.phase === 'answer' && gs?.curQ) {
     const q = gs.curQ;
     const stars = q.d==='سهل'?'⭐':q.d==='متوسط'?'⭐⭐':'⭐⭐⭐';
     qEl.textContent = q.q;
-    lEl.innerHTML = `<span class="og-letter-badge">${gs.active ? gc(gs.active.r,gs.active.c)?.letter||'' : ''}</span> ${stars} ${q.d}`;
+    const letter = gs.active ? gc(gs.active.r, gs.active.c)?.letter||'' : '';
+    lEl.innerHTML = `<span class="og-letter-badge">${letter}</span><span>${stars} ${q.d}</span>`;
     aa.style.display = 'block';
-    // أعد تفعيل حقل الإجابة فقط لو الخلية تغيرت
+    if(turnBox) turnBox.style.display = 'none';
+
     if(inp.dataset.activeKey !== `${gs.active?.r},${gs.active?.c}`) {
       inp.value = '';
       inp.disabled = false;
       inp.dataset.activeKey = `${gs.active?.r},${gs.active?.c}`;
+      inp.focus();
     }
   } else {
-    qEl.textContent = OL.isHost ? '👆 انقر على خلية لاختيار السؤال' : '⏳ في انتظار اختيار الخلية...';
+    // مرحلة الاختيار
+    const isMyTurn = gs?.turn === OL.team;
+    const turnName = gs?.turn === 'r' ? G.names.r : G.names.b;
+
+    if(gs?.phase === 'pick') {
+      qEl.textContent = isMyTurn
+        ? `👆 دورك! اختر خلية من الشبكة`
+        : `⏳ دور ${turnName} لاختيار الخلية...`;
+    } else {
+      qEl.textContent = '⏳ في انتظار بدء اللعبة...';
+    }
     lEl.textContent = '';
     aa.style.display = 'none';
     inp.dataset.activeKey = '';
+    if(turnBox) {
+      turnBox.style.display = 'block';
+      turnBox.textContent = isMyTurn ? '🟢 دورك تختار!' : `🔵 دور ${turnName}`;
+      turnBox.className = 'og-turn-box ' + (isMyTurn ? 'og-turn-mine' : 'og-turn-other');
+    }
   }
 }
 
-function ogSelectCell(r,c) {
-  if(!OL.isHost || G.over) return;
+/* المضيف يختار خلية يدوياً (override للفريق) */
+function ogSelectCell(r, c) {
+  if(G.over) return;
   const cd = gc(r,c);
-  if(cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
+  if(!cd || cd.owner) { toast('هذه الخلية محتلة','terr'); return; }
   G.active = {r,c};
-  loadQ(cd.letter); // يضمن سؤال بنفس حرف الخلية
-  // احذف أي إجابة سابقة
+  loadQ(cd.letter);
   fbRoomRef.child('gameState/winnerEvent').remove();
   const newGs = {
-    cells: G.cells.map(c=>({...c})),
+    cells:  G.cells.map(c=>({...c})),
     scores: {...G.scores},
     active: {r,c},
-    curQ: G.curQ,
-    phase: 'answer',
-    usedQ: [...G.usedQ],
+    curQ:   G.curQ,
+    phase:  'answer',
+    usedQ:  [...G.usedQ],
     lastWinner: null,
+    pickReq: null,
     winnerEvent: null
   };
   fbRoomRef.child('gameState').set(newGs);
-  toast(`▶️ الخلية "${cd.letter}" — السؤال على الهواء!`);
+  toast(`▶️ خلية "${cd.letter}" — السؤال على الهواء!`);
 }
 
 function olCheckAnswer(val) {
   if(!G.curQ || !OL.code || !G.active) return;
   if(normalize(val) === normalize(G.curQ.a)) {
     document.getElementById('og-ai').disabled = true;
-    const playerName = OL.isHost
-      ? document.getElementById('ol-cn').value.trim()||'المضيف'
-      : document.getElementById('ol-jn').value.trim()||'لاعب';
+    const playerName = OL.name || 'لاعب';
     showOGFlash(`✅ إجابة صحيحة! أنت الأسرع ⚡`, 'ok');
     playCorrectSound();
     fbRoomRef.child('gameState/winnerEvent').set({
@@ -2583,6 +3761,28 @@ function olLeave() {
   show('s-settings');
 }
 
+/* الانتقال لشاشة العرض أثناء اللعبة الأونلاين */
+function goDispOnline() {
+  // شاشة العرض تعرض شبكة الأونلاين
+  const dGrid = document.getElementById('dgrid');
+  if(!dGrid) return;
+  show('sd');
+  syncAll(); // تحديث شاشة العرض
+  // QR للتحكم من جهاز ثانٍ
+  const url = location.href.split('?')[0];
+  const sdQrImg = document.getElementById('sd-qr-img');
+  const sdQrLbl = document.getElementById('sd-qr-lbl');
+  const sdQrBox = document.getElementById('sd-qr-box');
+  if(sdQrImg && sdQrBox) {
+    sdQrBox.style.display = 'block';
+    const primary = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(url)}&bgcolor=0c032d&color=f5c842&margin=6`;
+    sdQrImg.onerror = ()=>{ if(sdQrLbl) sdQrLbl.textContent = url; };
+    sdQrImg.onload  = ()=>{ sdQrImg.style.display='block'; };
+    sdQrImg.src = primary;
+    if(sdQrLbl) sdQrLbl.textContent = 'امسح بالجوال للتحكم';
+  }
+}
+
 /* QR للتحكم من الجوال في وضع العرض */
 function toggleSDQR() {
   const box = document.getElementById('sd-qr-box');
@@ -2605,8 +3805,47 @@ function toggleSDQR() {
    ════════════════════════════════════════════════════════ */
 function show(id) {
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
+  const el = document.getElementById(id);
+  if(el) el.classList.add('on');
+  // إظهار/إخفاء زر الثيم العالمي
+  const gb = document.getElementById('global-theme-btn');
+  if(gb) gb.style.display = (id === 's-landing') ? 'none' : 'flex';
 }
+
+/* ════ Landing Page ════ */
+function goFromLanding() {
+  show('s-settings');
+}
+
+/* ════ Dark / Light Toggle ════ */
+let _theme = localStorage.getItem('jawabak-theme') || 
+  (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+
+function applyTheme(t) {
+  _theme = t;
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('jawabak-theme', t);
+  const icon = t === 'light' ? '🌙' : '☀️';
+  document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = icon);
+}
+
+function toggleTheme() {
+  applyTheme(_theme === 'dark' ? 'light' : 'dark');
+}
+
+// تطبيق الثيم فور التحميل
+(function() { applyTheme(_theme); })();
+
+/* ════ تأثيرات متحركة على النتيجة ════ */
+function animateScore(elId) {
+  const el = document.getElementById(elId);
+  if(!el) return;
+  el.classList.remove('updated');
+  void el.offsetWidth;
+  el.classList.add('updated');
+  setTimeout(()=>el.classList.remove('updated'), 600);
+}
+
 
 function startGame(mode) {
   readConfig();
@@ -2732,8 +3971,25 @@ function toast(msg,cls) {
    تهيئة عند تحميل الصفحة
    ════════════════════════════════════════════════════════ */
 window.addEventListener('DOMContentLoaded', () => {
+  // تطبيق الثيم المحفوظ
+  applyTheme(_theme);
+  // الشاشة الرئيسية → Landing
+  // hide global theme btn when on landing (it has its own)
+  document.querySelectorAll('.scr').forEach(s=>{
+    const obs = new MutationObserver(()=>{
+      const isLanding = document.getElementById('s-landing')?.classList.contains('on');
+      const gb = document.getElementById('global-theme-btn');
+      if(gb) gb.style.display = isLanding ? 'none' : 'flex';
+    });
+    obs.observe(s, {attributes:true, attributeFilter:['class']});
+  });
+  // initial state
+  const isLanding = document.getElementById('s-landing')?.classList.contains('on');
+  const gb = document.getElementById('global-theme-btn');
+  if(gb) gb.style.display = isLanding ? 'none' : 'flex';
+
   buildSettingsUI();
-  applyTheme(0); // الثيم الافتراضي
+  applyColorTheme(0); // الثيم الافتراضي
 
   // استماع لتغيير حجم الشاشة وإعادة بناء الشبكة
   let resizeTimer;
