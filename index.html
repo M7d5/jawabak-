@@ -924,16 +924,6 @@ footer b { color:rgba(245,200,66,.48) }
   100% { opacity:0; transform:translateY(-120vh) rotate(720deg) scale(.3) }
 }
 
-/* زر الوضع الفاتح/الداكن */
-.theme-toggle {
-  position:absolute; top:14px; left:14px; z-index:10;
-  width:42px; height:42px; border-radius:12px;
-  background:var(--panel); border:1px solid var(--bdr);
-  color:var(--text); font-size:18px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition: all .25s; backdrop-filter:blur(10px);
-}
-.theme-toggle:hover { border-color:var(--gold); transform:scale(1.1) rotate(15deg) }
 
 /* شريط إصدار */
 .lp-version {
@@ -1127,21 +1117,27 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
 [data-theme="light"] footer { color:var(--dim) }
 [data-theme="light"] .hex-text { fill:#1a0845 !important }
 
-/* زر theme toggle في كل الشاشات */
+/* زر theme toggle — ثابت تحت يسار */
 .theme-toggle {
   position:fixed; bottom:16px; left:16px; z-index:9999;
-  width:38px; height:38px; border-radius:10px;
+  display:flex; align-items:center; gap:7px;
+  padding:8px 14px; border-radius:50px;
   background:var(--panel); border:1px solid var(--bdr);
-  color:var(--text); font-size:16px; cursor:pointer;
-  display:flex; align-items:center; justify-content:center;
-  transition: all .25s; backdrop-filter:blur(10px);
+  color:var(--text2); font-size:13px; font-weight:700;
+  cursor:pointer; transition: all .25s;
+  backdrop-filter:blur(14px);
   box-shadow: 0 4px 20px var(--shadow);
+  font-family:'Cairo',sans-serif;
+  white-space:nowrap;
 }
 .theme-toggle:hover { 
-  border-color:var(--gold); 
-  transform:scale(1.15) rotate(20deg);
-  box-shadow: 0 6px 24px rgba(245,200,66,.3);
+  border-color:var(--gold); color:var(--gold);
+  box-shadow: 0 6px 24px rgba(245,200,66,.25);
+  transform:translateY(-2px);
 }
+.theme-toggle .tt-icon { font-size:16px; transition:transform .3s }
+.theme-toggle:hover .tt-icon { transform:rotate(20deg) }
+.theme-toggle .tt-lbl { font-size:11px; opacity:.8 }
 
 /* ════ GLOBAL LIGHT MODE OVERRIDES ════ */
 [data-theme="light"] .scr { background:var(--bg) }
@@ -1278,7 +1274,10 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
 </head>
 <body>
 <!-- زر الوضع الفاتح/الداكن — ثابت في كل الشاشات -->
-<button class="theme-toggle" id="global-theme-btn" onclick="toggleTheme()" title="تغيير المظهر">🌙</button>
+<button class="theme-toggle" id="global-theme-btn" onclick="toggleTheme()" title="تغيير المظهر">
+  <span class="tt-icon">🌙</span>
+  <span class="tt-lbl">المظهر</span>
+</button>
 
 <div id="cfw"></div>
 <div id="tw"></div>
@@ -1366,8 +1365,7 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
   </div>
 
   <!-- زر الوضع -->
-  <button class="theme-toggle" id="lp-theme-btn" onclick="toggleTheme()" title="تغيير المظهر">🌙</button>
-
+  <!-- زر المظهر موجود globally -->
   <div class="lp-version">v9 • جوابك</div>
 </div>
 
@@ -3828,7 +3826,7 @@ function show(id) {
   if(el) el.classList.add('on');
   // إظهار/إخفاء زر الثيم العالمي
   const gb = document.getElementById('global-theme-btn');
-  if(gb) gb.style.display = (id === 's-landing') ? 'none' : 'flex';
+  
 }
 
 /* ════ Landing Page ════ */
@@ -3845,7 +3843,13 @@ function applyTheme(t) {
   document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('jawabak-theme', t);
   const icon = t === 'light' ? '🌙' : '☀️';
-  document.querySelectorAll('.theme-toggle').forEach(b => b.textContent = icon);
+  const lbl  = t === 'light' ? 'داكن' : 'فاتح';
+  document.querySelectorAll('.theme-toggle').forEach(b => {
+    const ic = b.querySelector('.tt-icon');
+    const lb = b.querySelector('.tt-lbl');
+    if(ic) ic.textContent = icon; else b.textContent = icon;
+    if(lb) lb.textContent = lbl;
+  });
 }
 
 function toggleTheme() {
@@ -3998,14 +4002,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const obs = new MutationObserver(()=>{
       const isLanding = document.getElementById('s-landing')?.classList.contains('on');
       const gb = document.getElementById('global-theme-btn');
-      if(gb) gb.style.display = isLanding ? 'none' : 'flex';
+      
     });
     obs.observe(s, {attributes:true, attributeFilter:['class']});
   });
   // initial state
   const isLanding = document.getElementById('s-landing')?.classList.contains('on');
   const gb = document.getElementById('global-theme-btn');
-  if(gb) gb.style.display = isLanding ? 'none' : 'flex';
+  
 
   buildSettingsUI();
   applyColorTheme(0); // الثيم الافتراضي
