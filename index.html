@@ -107,17 +107,21 @@ input, button { font-family:'Cairo',sans-serif }
    شاشة الإعدادات (Settings)
    ════════════════════════════════════════════════════════ */
 #s-settings {
-  background: radial-gradient(ellipse 120% 80% at 50% -5%, #8040d8 0%, #280878 100%);
+  background: var(--bg);
   align-items: center; justify-content: flex-start;
   padding: 20px 16px 16px;
   overflow-y: auto; gap: 14px;
 }
-.set-logo { font-size: 64px; font-weight:900; line-height:.9; letter-spacing:-4px;
-  background: linear-gradient(140deg,#fff 0%,#f5c842 40%,#e879f9 100%);
+.set-logo { 
+  font-size: 56px; font-weight:900; line-height:1.1; letter-spacing:2px;
+  font-family:'Tajawal','Cairo',sans-serif;
+  background: linear-gradient(140deg,#fff 0%,#f5c842 40%,#c084fc 75%,#7c3aed 100%);
   -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
-  filter: drop-shadow(0 4px 24px rgba(245,200,66,.5)); text-align:center; flex-shrink:0 }
+  filter: drop-shadow(0 4px 24px rgba(245,200,66,.5)); text-align:center; flex-shrink:0;
+  cursor:pointer;
+}
 .set-card {
-  background: rgba(255,255,255,.09); border: 1.5px solid var(--bdr);
+  background: var(--panel); border: 1.5px solid var(--bdr);
   border-radius: 20px; padding: 20px 22px;
   width: min(520px,97vw); backdrop-filter: blur(28px);
   box-shadow: 0 18px 55px rgba(0,0,0,.38); flex-shrink:0
@@ -401,7 +405,7 @@ input, button { font-family:'Cairo',sans-serif }
 .stxt { font-size:11px; color:var(--dim); line-height:1.9 }
 
 /* ════ شاشة العرض ════ */
-#sd { background:radial-gradient(ellipse at 50% 35%,#6828c0 0%,#250878 100%) }
+#sd { background:var(--bg2) }
 .dbody { flex:1; display:flex; align-items:center; justify-content:center; padding:10px; overflow:hidden }
 .dal {
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
@@ -449,7 +453,7 @@ input, button { font-family:'Cairo',sans-serif }
 
 /* ════ اللوبي الأونلاين ════ */
 #sol {
-  background: radial-gradient(ellipse at 50% 0%,#6828c0 0%,#22077a 100%);
+  background: var(--bg);
   align-items:center; justify-content:center; gap:16px; padding:28px 16px; overflow-y:auto
 }
 .olcard { background:rgba(255,255,255,.09); border:1.5px solid var(--bdr); border-radius:20px; padding:22px 26px; width:min(460px,95vw); backdrop-filter:blur(28px) }
@@ -538,7 +542,7 @@ input, button { font-family:'Cairo',sans-serif }
 .ogflash.ok-b { color:var(--t2-2); background:var(--t2-bg); border-color:var(--t2) }
 
 /* ════ اللعبة الأونلاين ════ */
-#song { background:radial-gradient(ellipse at 50% 0%,#5020a8 0%,#1e0660 100%) }
+#song { background:var(--bg2) }
 .ogbody { flex:1; display:flex; min-height:0 }
 .ogpanel {
   width:310px; flex-shrink:0;
@@ -655,7 +659,7 @@ input, button { font-family:'Cairo',sans-serif }
 
 /* ════ شاشة الفوز ════ */
 #swin {
-  background: radial-gradient(ellipse at 50% 20%,#6028c0 0%,#150560 70%);
+  background: var(--bg2);
   align-items:center; justify-content:center; padding:0; overflow:hidden
 }
 .winwrap { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:36px; position:relative; z-index:2; text-align:center }
@@ -1118,7 +1122,7 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
   border-color: var(--bdr);
 }
 [data-theme="light"] #s-settings {
-  background: linear-gradient(160deg, #ede8ff 0%, #f8f5ff 60%, #fff5e8 100%);
+  background: var(--bg);
 }
 [data-theme="light"] footer { color:var(--dim) }
 [data-theme="light"] .hex-text { fill:#1a0845 !important }
@@ -1368,7 +1372,22 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
 </div>
 
 <div id="s-settings" class="scr">
-  <div class="set-logo" style="cursor:pointer" onclick="show('s-landing')" title="العودة للرئيسية">جوابك</div>
+  <!-- خلفية متحركة مثل Landing -->
+  <div class="lp-bg" aria-hidden="true">
+    <div class="lp-orb o1"></div>
+    <div class="lp-orb o2"></div>
+    <div class="lp-orb o3"></div>
+    <div class="lp-hex-deco">
+      <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+        <defs><pattern id="hxp2" x="0" y="0" width="70" height="80" patternUnits="userSpaceOnUse">
+          <polygon points="35,2 65,18 65,52 35,68 5,52 5,18" fill="none" stroke="currentColor" stroke-width="1.5"/>
+        </pattern></defs>
+        <rect width="100%" height="100%" fill="url(#hxp2)" style="color:#7c3aed"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="set-logo" onclick="show('s-landing')" title="العودة للرئيسية">جوابك</div>
 
   <div class="set-card">
     <!-- اسم المسابقة -->
