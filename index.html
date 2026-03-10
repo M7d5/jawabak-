@@ -406,7 +406,7 @@ input, button { font-family:'Cairo',sans-serif }
 
 /* ════ شاشة العرض ════ */
 #sd { background:var(--bg2) }
-.dbody { flex:1; display:flex; align-items:center; justify-content:center; padding:10px; overflow:hidden }
+.dbody { flex:1; display:flex; align-items:center; justify-content:center; padding:10px; overflow:hidden; gap:0 }
 .dal {
   position:fixed; bottom:22px; left:50%; transform:translateX(-50%);
   background:rgba(18,4,65,.92); border:2px solid rgba(245,200,66,.44);
@@ -416,6 +416,76 @@ input, button { font-family:'Cairo',sans-serif }
 .dal.on { display:flex }
 .dal-l { font-size:11px; color:var(--dim); font-weight:600 }
 .dal-c { font-size:48px; font-weight:900; color:var(--gold); line-height:1 }
+
+/* لوحة السؤال في شاشة العرض */
+.disp-qpanel {
+  width:300px; flex-shrink:0;
+  display:flex; flex-direction:column; align-items:center;
+  gap:12px; padding:20px 16px; text-align:center;
+  background:var(--panel); border-left:1px solid var(--bdr);
+  height:100%; overflow-y:auto;
+}
+.disp-qltr {
+  font-size:72px; font-weight:900; line-height:1;
+  font-family:'Tajawal','Cairo',sans-serif;
+  background:linear-gradient(140deg,#fff,var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  filter:drop-shadow(0 0 20px rgba(245,200,66,.5));
+  animation: popIn .4s cubic-bezier(.34,1.56,.64,1);
+}
+.disp-qtitle {
+  font-size:10px; font-weight:800; letter-spacing:3px; text-transform:uppercase;
+  color:var(--dim); 
+}
+.disp-qtext {
+  font-size:18px; font-weight:700; line-height:1.7;
+  color:var(--text); padding:14px 12px;
+  background:var(--bg3); border-radius:14px;
+  border:1px solid var(--bdr); width:100%;
+  min-height:80px; display:flex; align-items:center; justify-content:center;
+  animation: popIn .35s cubic-bezier(.34,1.56,.64,1);
+}
+.disp-qdif {
+  font-size:13px; font-weight:700; color:var(--gold);
+  min-height:20px;
+}
+/* عداد تنازلي */
+.disp-timer {
+  position:relative; width:80px; height:80px;
+  display:flex; align-items:center; justify-content:center;
+}
+.disp-timer-ring { width:80px; height:80px; position:absolute }
+.disp-timer-num {
+  font-size:26px; font-weight:900; color:var(--gold);
+  position:relative; z-index:1;
+}
+.disp-hint-text {
+  font-size:13px; color:var(--gold); font-weight:700;
+  background:rgba(245,200,66,.1); border:1px solid rgba(245,200,66,.3);
+  border-radius:10px; padding:8px 12px; width:100%;
+  text-align:center; animation:popIn .3s ease;
+}
+
+/* QR box في الإعدادات */
+.disp-qr-box {
+  background:var(--bg3); border:1px solid var(--bdr);
+  border-radius:14px; padding:14px 16px;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+}
+.disp-qr-desc {
+  font-size:11px; color:var(--dim); text-align:center; line-height:1.6;
+}
+.disp-qr-url {
+  font-size:10px; color:var(--gold); word-break:break-all; text-align:center;
+  background:rgba(245,200,66,.07); border-radius:8px; padding:6px 10px;
+  border:1px solid rgba(245,200,66,.2); width:100%;
+}
+.disp-qr-copy {
+  padding:7px 18px; border-radius:8px; border:1.5px solid var(--bdr);
+  background:transparent; color:var(--text2); font-size:12px; font-weight:700;
+  cursor:pointer; font-family:'Cairo',sans-serif; transition:all .2s;
+}
+.disp-qr-copy:hover { border-color:var(--gold); color:var(--gold) }
 
 /* ════ اللعب الثنائي (Self Play) ════ */
 #ss { background:var(--bg2) }
@@ -1458,6 +1528,17 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
         <button class="set-btn set-btn-o" onclick="show('sol')">🌐 أونلاين</button>
       </div>
     </div>
+
+    <!-- QR شاشة العرض -->
+    <div class="set-section" style="margin-top:12px;margin-bottom:0">
+      <div class="set-label">📺 شاشة العرض على جهاز آخر</div>
+      <div class="disp-qr-box">
+        <div class="disp-qr-desc">افتح هذا الرابط على التلفزيون أو جهاز العرض — يظهر السؤال بدون الجواب</div>
+        <div id="set-qr-wrap" style="margin:10px auto;width:fit-content"></div>
+        <div id="set-qr-url" class="disp-qr-url"></div>
+        <button class="disp-qr-copy" onclick="copyDispUrl()">📋 نسخ الرابط</button>
+      </div>
+    </div>
   </div>
   <footer><b>جوابك v9</b> &nbsp;•&nbsp; <b>حروف، تنافس، إبداع</b> &nbsp;•&nbsp; <span style="cursor:pointer;opacity:.7" onclick="show('s-landing')">← الرئيسية</span></footer>
 </div>
@@ -1549,6 +1630,25 @@ polygon { transition: fill .4s cubic-bezier(.34,1.56,.64,1) }
       <div class="darr darr-r"><div class="dd" style="background:var(--t2)"></div><span id="d-dlb">الفريق 2</span></div>
       <div class="darr darr-l"><div class="dd" style="background:var(--t2)"></div><span>يمين ↔ يسار</span></div>
       <div class="hxgrid" id="dgrid"></div>
+    </div>
+    <!-- لوحة السؤال في شاشة العرض -->
+    <div class="disp-qpanel" id="disp-qpanel">
+      <div class="disp-qltr" id="disp-qltr">—</div>
+      <div class="disp-qtitle">السؤال</div>
+      <div class="disp-qtext" id="disp-qtext">اختر خلية من الشبكة لعرض السؤال هنا</div>
+      <div class="disp-qdif" id="disp-qdif"></div>
+      <!-- عداد تنازلي -->
+      <div class="disp-timer" id="disp-timer" style="display:none">
+        <svg class="disp-timer-ring" viewBox="0 0 80 80">
+          <circle cx="40" cy="40" r="34" fill="none" stroke="var(--bdr)" stroke-width="5"/>
+          <circle id="disp-timer-circle" cx="40" cy="40" r="34" fill="none" 
+            stroke="var(--gold)" stroke-width="5"
+            stroke-dasharray="213.6" stroke-dashoffset="0"
+            stroke-linecap="round" transform="rotate(-90 40 40)"/>
+        </svg>
+        <div class="disp-timer-num" id="disp-timer-num">30</div>
+      </div>
+      <div class="disp-hint-text" id="disp-hint-text" style="display:none"></div>
     </div>
   </div>
   <div class="dal" id="dal"><div class="dal-l">الحرف المطلوب</div><div class="dal-c" id="dalc">—</div></div>
@@ -3031,6 +3131,8 @@ function showQ(q) {
   document.getElementById('hpa').textContent = q.a;
   resetHintPanel();
   enableJ();
+  // تحديث لوحة العرض
+  dispUpdateQ(q);
 }
 
 function changeQ() {
@@ -3114,10 +3216,12 @@ function giveHint(level) {
   const reveal = document.getElementById('hint-reveal');
   reveal.textContent = text;
   reveal.classList.remove('on');
-  void reveal.offsetWidth; // إعادة تشغيل الأنيميشن
+  void reveal.offsetWidth;
   reveal.classList.add('on');
 
-  // العقوبات الزمنية
+  // تحديث شاشة العرض بالمساعدة
+  dispShowHint(text);
+
   if(level === 2) {
     G_hints.penalty += 5;
     toast('⏱️ خصم 5 ثوانٍ من وقت الحجب عند الخطأ','terr');
@@ -3824,9 +3928,11 @@ function show(id) {
   document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));
   const el = document.getElementById(id);
   if(el) el.classList.add('on');
-  // إظهار/إخفاء زر الثيم العالمي
+  // تهيئة QR عند فتح الإعدادات
+  if(id === 's-settings') initSettingsQR();
+  // مسح لوحة العرض عند الرجوع للإعدادات
+  if(id === 's-settings' || id === 's-landing') dispClearQ();
   const gb = document.getElementById('global-theme-btn');
-  
 }
 
 /* ════ Landing Page ════ */
@@ -3906,6 +4012,110 @@ function startGame(mode) {
 }
 
 function goDisp() { syncAll(); show('sd'); }
+
+/* ════════════════════════════════════════════════════════
+   Display Panel — لوحة السؤال في شاشة العرض
+   ════════════════════════════════════════════════════════ */
+let _dispTimer = null;
+
+function dispUpdateQ(q) {
+  if(!q) return;
+  // الحرف
+  const ltrEl = document.getElementById('disp-qltr');
+  if(ltrEl) { ltrEl.textContent = q.l || '—'; ltrEl.style.animation='none'; void ltrEl.offsetWidth; ltrEl.style.animation=''; }
+  // السؤال
+  const qtEl = document.getElementById('disp-qtext');
+  if(qtEl) { qtEl.textContent = q.q; qtEl.style.animation='none'; void qtEl.offsetWidth; qtEl.style.animation=''; }
+  // الصعوبة
+  const dif = document.getElementById('disp-qdif');
+  const stars = q.d==='سهل'?'⭐':q.d==='متوسط'?'⭐⭐':'⭐⭐⭐';
+  if(dif) dif.textContent = stars + ' ' + (q.d||'');
+  // إخفاء التلميح القديم
+  const ht = document.getElementById('disp-hint-text');
+  if(ht) { ht.style.display='none'; ht.textContent=''; }
+  // تشغيل العداد
+  dispStartTimer(30);
+}
+
+function dispShowHint(text) {
+  const ht = document.getElementById('disp-hint-text');
+  if(!ht) return;
+  ht.textContent = '💡 ' + text;
+  ht.style.display = 'block';
+}
+
+function dispStartTimer(sec) {
+  if(_dispTimer) clearInterval(_dispTimer);
+  const numEl = document.getElementById('disp-timer-num');
+  const circle = document.getElementById('disp-timer-circle');
+  const timerEl = document.getElementById('disp-timer');
+  if(!numEl || !timerEl) return;
+  timerEl.style.display = 'flex';
+  const total = sec;
+  const circ = 2 * Math.PI * 34;
+  let n = sec;
+  numEl.textContent = n;
+  if(circle) circle.style.strokeDashoffset = 0;
+  _dispTimer = setInterval(()=>{
+    n--;
+    if(n < 0) { clearInterval(_dispTimer); timerEl.style.display='none'; return; }
+    numEl.textContent = n;
+    // تغيير اللون حسب الوقت
+    if(circle) {
+      const pct = n / total;
+      circle.style.strokeDashoffset = circ * (1 - pct);
+      circle.style.stroke = pct > 0.5 ? 'var(--gold)' : pct > 0.25 ? '#f97316' : '#ef4444';
+    }
+  }, 1000);
+}
+
+function dispClearQ() {
+  if(_dispTimer) clearInterval(_dispTimer);
+  const el = document.getElementById('disp-qtext');
+  const ltr = document.getElementById('disp-qltr');
+  const dif = document.getElementById('disp-qdif');
+  const ht = document.getElementById('disp-hint-text');
+  const timer = document.getElementById('disp-timer');
+  if(el) el.textContent = 'اختر خلية من الشبكة لعرض السؤال هنا';
+  if(ltr) ltr.textContent = '—';
+  if(dif) dif.textContent = '';
+  if(ht) { ht.style.display='none'; ht.textContent=''; }
+  if(timer) timer.style.display='none';
+}
+
+/* ═══ QR شاشة العرض في الإعدادات ═══ */
+function initSettingsQR() {
+  const url = location.href.split('?')[0] + '?mode=display';
+  const wrap = document.getElementById('set-qr-wrap');
+  const urlEl = document.getElementById('set-qr-url');
+  if(urlEl) urlEl.textContent = url;
+  if(wrap) {
+    const img = document.createElement('img');
+    img.style.cssText = 'width:110px;height:110px;border-radius:10px;display:block';
+    img.src = `https://api.qrserver.com/v1/create-qr-code/?size=110x110&data=${encodeURIComponent(url)}&bgcolor=0c032d&color=f5c842&margin=6`;
+    img.onerror = ()=>{ img.style.display='none'; };
+    wrap.innerHTML = '';
+    wrap.appendChild(img);
+  }
+}
+
+function copyDispUrl() {
+  const url = location.href.split('?')[0] + '?mode=display';
+  navigator.clipboard?.writeText(url).then(()=>toast('✅ تم نسخ الرابط','tok'))
+    .catch(()=>toast('❌ فشل النسخ','terr'));
+}
+
+/* تفعيل وضع العرض التلقائي عند الفتح بـ ?mode=display */
+(function checkDisplayMode() {
+  if(location.search.includes('mode=display')) {
+    document.addEventListener('DOMContentLoaded', ()=>{
+      show('sd');
+      // إخفاء زر المضيف في وضع العرض
+      const hBtn = document.querySelector('#sd .hbt');
+      if(hBtn) hBtn.style.display='none';
+    });
+  }
+})();
 
 function resetGame() {
   if(G.lockTimer) clearInterval(G.lockTimer);
